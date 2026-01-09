@@ -1,0 +1,79 @@
+# Xcode
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcodeproj/project.xcworkspace/
+*.xcworkspace/*
+!*.xcworkspace/contents.xcworkspacedata
+!*.xcworkspace/xcshareddata/
+xcuserdata/
+*.xccheckout
+*.moved-aside
+*.xcuserstate
+*.xcscmblueprint
+*.xcscheme
+
+# Build
+build/
+DerivedData/
+*.build/
+*.swiftpm/
+
+# Swift Package Manager
+.build/
+Packages/
+Package.pins
+Package.resolved
+*.xcodeproj
+
+# CocoaPods (if used)
+Pods/
+Podfile.lock
+
+# Carthage (if used)
+Carthage/Build/
+Carthage/Checkouts/
+
+# OS generated
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+*.swp
+*.swo
+*~
+.idea/
+*.iml
+
+# Secrets (never commit)
+*.pem
+*.p12
+*.key
+secrets/
+.env
+.env.*
+
+# Test artifacts
+*.xcresult
+coverage/
+
+# Archives
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
+# Fastlane (if used)
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
