@@ -104,6 +104,27 @@ During pre-1.0 development:
 | Phase 4 | 0.5.0 | Debrief tools, audit trail viewer |
 | Phase 5 | 1.0.0 | AI agents, thermal detection, full SwiftVector |
 
+## [2.0.0] - 2026-02-05
+
+### Changed - Architecture Restructuring
+- Restructured monolithic Flightworks Control into jurisdiction-based suite
+- Created FlightLaw (core safety kernel)
+- Created ThermalLaw (thermal inspection jurisdiction)
+- Created SurveyLaw (precision mapping jurisdiction)
+
+### Added
+- Flightworks-Suite-Overview.md - Master architecture document
+- HLD-FlightworksCore.md, PRD-FlightworksCore.md
+- HLD-FlightworksThermal.md, PRD-FlightworksThermal.md
+- HLD-FlightworksSurvey.md, PRD-FlightworksSurvey.md
+
+### Deprecated
+- HLD-FlightworksControl.md (replaced by Core + Thermal)
+- PRD-FlightworksControl.md (replaced by Core + Thermal)
+- THERMAL_INSPECTION_EXTENSION.md (now HLD-FlightworksThermal.md)
+
+### Archived
+- Moved v1 monolithic documents to archive/v1-monolithic/
 ---
 
 ## How to Read This Changelog

@@ -1,36 +1,91 @@
-# Flightworks Control: Product Roadmap
+# Flightworks Suite: Product Roadmap
 
-## Operator-First Flight UI for U.S.-Made Systems
+## Jurisdiction-Based Architecture for Governed Drone Operations
 
-Flightworks Control is an operator-centric Ground Control Station (GCS) prototype built in Swift/SwiftUI. The goal is to create a reference interface that demonstrates flight-UI intuition, human-factors thinking, operator workflow empathy, and product-level decision-making—all powered by deterministic AI architecture.
+The Flightworks Suite demonstrates deterministic AI control through a jurisdiction-based architecture. **FlightLaw** provides universal safety guarantees, extended by mission-specific jurisdictions (**ThermalLaw** for inspection, **SurveyLaw** for mapping) that inherit base safety while adding domain-specific governance.
 
 ---
+
+## Suite Architecture
+
+```
+FlightLaw (Universal Safety Kernel)
+    │
+    ├─→ ThermalLaw (Thermal Inspection)
+    │   • Post-hail roof assessment
+    │   • Governed AI detection
+    │   • DJI Challenge MVP (Feb-Jun 2026)
+    │
+    └─→ SurveyLaw (Precision Mapping)
+        • RTK precision surveying
+        • Engineering-grade accuracy
+        • Future development (Q3 2026+)
+```
+
+**Current Focus:** ThermalLaw MVP for DJI Drone Onboard AI Challenge 2026
+
+
+---
+
 
 ## Product Vision
 
-Unmanned aircraft operators need clarity, speed, and confidence. The GCS must reduce cognitive load to optimize safety and efficiency during inspection, public safety, and BVLOS-oriented tasks.
+The Flightworks Suite demonstrates that **governed AI is competitive AI**. By providing deterministic, auditable control systems, we enable:
 
-**Flightworks Control demonstrates:**
+**FlightLaw (Universal Safety Kernel):**
+- Battery reserve enforcement
+- Geofence violation prevention  
+- Pre-flight readiness validation
+- Tamper-evident audit trail
+- Deterministic replay capability
 
-- A modern, intuitive, SwiftUI-based flight interface
-- Clear visual hierarchy for critical telemetry
-- Accessible mission planning and execution
-- Operator-friendly safety cues and state transitions
-- A foundation for autonomy-enabling workflows
-- Deterministic, auditable decision-making (SwiftVector integration)
-- Edge AI capabilities for thermal inspection workflows
+**ThermalLaw (Thermal Inspection Jurisdiction):**
+- Post-hail roof damage assessment
+- RGB-primary detection (thermal secondary)
+- Governed candidate approval workflow
+- Documentation Pack export
+- Session replay verification
+- **Target:** DJI Drone Onboard AI Challenge 2026
 
----
+**SurveyLaw (Precision Mapping Jurisdiction):**
+- RTK precision surveying (2cm accuracy)
+- Grid adherence validation
+- GSD compliance verification
+- Gap detection and overlap analysis
+- **Target:** Civil engineering market (Q3 2026+)
+
+
 
 ## North Star Metrics
 
-| Metric | Target | Rationale |
-|--------|--------|-----------|
-| Mean Time to Establish Situational Awareness (MTTSA) | -15% vs legacy GCS | Time to locate aircraft position and flight status post-connection |
-| Decision Confidence Score | >90% operator confidence | Operator trust in AI-assisted recommendations |
-| System Determinism Rate | 100% reproducible outputs | Given identical inputs, identical recommendations |
+### FlightLaw (Universal Safety)
 
----
+| Metric | Target | Verification |
+|--------|--------|--------------|
+| Determinism rate | 100% | Property-based tests (10,000 iterations) |
+| Audit replay accuracy | 100% state hash match | End-to-end replay tests |
+| FlightLaw enforcement | 100% violation prevention | Compliance test suite |
+| Law evaluation latency | <5ms (median) | Performance profiling |
+
+### ThermalLaw (DJI Challenge)
+
+| Metric | Target | Verification |
+|--------|--------|--------------|
+| End-to-end demo reliability | 100% | Evaluation readiness |
+| Candidate proposal recall | >90% | vs manual review |
+| False positive rate | <15% | Field validation |
+| Operator approval rate | >70% | User acceptance |
+| Export generation success | 100% | Reliability testing |
+
+### SurveyLaw (Precision Mapping)
+
+| Metric | Target | Verification |
+|--------|--------|--------------|
+| Horizontal accuracy (RTK) | <2cm (95% CEP) | Field testing with ground control |
+| Grid coverage | >95% | Mission completion analysis |
+| GSD compliance | >98% | Altitude verification |
+| Gap detection accuracy | 100% (>1m²) | QC validation |
+
 
 ## What This Prototype Is NOT (Scope Boundaries)
 
@@ -78,227 +133,193 @@ If AI subsystems fail or produce uncertain outputs, the system gracefully degrad
 
 ---
 
-## Phase Roadmap
 
-### Phase 0: Foundation ✅ In Progress
+## Development Roadmap
 
-**Timeline:** Weeks 1-2  
-**T-Shirt Size:** M (Medium)  
-**Primary Beneficiary:** Technical UAV Developer
+### Phase 0: FlightLaw Foundation (February 2026)
 
-**Problem Solved:** Establish the architectural foundation that makes all subsequent phases possible. Without a solid SwiftVector implementation, determinism claims are hollow.
+**Focus:** Universal safety kernel  
+**Deliverables:** Core State/Action/Reducer, Laws 3/4/7/8, Audit Trail
 
-| Deliverable | Status | SwiftVector Application |
-|-------------|--------|------------------------|
-| Repository structure and documentation | ⬜ | Project organization enables auditability |
-| Xcode project with SwiftUI app | ⬜ | Swift-native foundation |
-| Core State/Action/Reducer protocols | ⬜ | Core SwiftVector pattern |
-| FlightState, FlightAction, FlightReducer | ⬜ | Deterministic state transitions |
-| Orchestrator with action logging | ⬜ | Audit trail foundation |
-| Unit tests for reducer determinism | ⬜ | Verifiable determinism |
-| CI/CD pipeline (GitHub Actions) | ⬜ | Automated verification |
-| Thermal telemetry stubs in FlightState | ⬜ | Extension point for Phase 5+ |
+| Deliverable | Status | Description |
+|-------------|--------|-------------|
+| SwiftVector Core protocols | ✅ | State, Action, Reducer patterns |
+| FlightLaw specification | ✅ | HLD + PRD documents |
+| Law 3 (Observation) | 🔄 | Telemetry logging, pre-flight validation |
+| Law 4 (Resource) | 🔄 | Battery management, thermal limits |
+| Law 7 (Spatial) | 🔄 | Geofencing, altitude limits |
+| Law 8 (Authority) | 🔄 | Risk-tiered operator approval |
+| Audit trail with SHA256 | 🔄 | Tamper-evident logging |
+| Replay engine | 🔄 | Deterministic state reconstruction |
 
 **Success Criteria:**
-- Build compiles and runs
-- Tests pass with 80%+ coverage
-- Architecture documented
-- Ready for Phase 1 development
-
-**Technical Writing Opportunity:** "Building a Deterministic GCS: SwiftVector Foundation"
+- All Laws implemented and tested
+- Determinism verified (10,000 iterations)
+- Audit trail integrity proven
+- Ready for jurisdiction extension
 
 ---
 
-### Phase 1: Core Flight Interface
+### Phase 1: ThermalLaw MVP - Foundation (March 2026)
 
-**Timeline:** Weeks 3-6  
-**T-Shirt Size:** L (Large)  
-**Primary Beneficiary:** Public Safety Operator
+**Focus:** DJI Challenge end-to-end workflow  
+**Target:** Observation → Capture → Queue → Approval → Export
 
-**Problem Solved:** Reduces cognitive load by placing essential telemetry at center of operator's view. Instantly conveys spatial awareness and direction of travel. Eliminates confusion during critical pre-flight sequences.
-
-| Deliverable | Status | SwiftVector Application |
-|-------------|--------|------------------------|
-| MAVLink connection manager (simulated) | ⬜ | Deterministic connection state machine |
-| Telemetry data stream (Combine) | ⬜ | Reactive streams with backpressure |
-| Telemetry display UI (alt, speed, battery, GPS) | ⬜ | State-driven UI updates |
-| Map view with aircraft puck | ⬜ | Position state visualization |
-| State machine visualization | ⬜ | Explicit state transitions |
-| Telemetry recording for replay | ⬜ | Deterministic replay foundation |
-| PX4 SITL integration | ⬜ | Real MAVLink validation |
-| Thermal data placeholder in telemetry | ⬜ | Extension point validation |
+| Deliverable | Status | Description |
+|-------------|--------|-------------|
+| Session management | ⏳ | Start/end, metadata tracking |
+| Frame capture | ⏳ | RGB imagery with GPS metadata |
+| Candidate queue UI | ⏳ | Operator review interface |
+| Approve/reject actions | ⏳ | Law 8 enforcement |
+| Export stub (JSON) | ⏳ | Basic data export |
+| Tier 0 baseline | ⏳ | Rule-based candidate finder |
 
 **Success Criteria:**
-- Connect to PX4 SITL
-- Display real-time telemetry
-- Track aircraft on map
-- Record and replay telemetry
-- 80% test coverage maintained
+- Complete inspection session workflow
+- Candidates appear in queue
+- Operator approval enforced
+- JSON export functional
 
-**Technical Writing Opportunities:**
-- "Real-Time Telemetry in Swift: Combine Streams for Safety-Critical Data"
-- "Human-in-Command: AI-Assisted Development of a GCS"
+**DJI Challenge Milestone:** End-to-end skeleton operational
 
 ---
 
-### Phase 2: Mission Planning
+### Phase 2: ThermalLaw MVP - ML Integration (April 2026)
 
-**Timeline:** Weeks 7-10  
-**T-Shirt Size:** M (Medium)  
-**Primary Beneficiary:** Inspection Pilot
+**Focus:** Onboard ML inference with deterministic post-processing  
+**Target:** CoreML model, severity banding, roof zone assignment
 
-**Problem Solved:** Simplifies complex coordinate entry into tactile interaction. Defines basic no-fly boundaries. Ensures aircraft cannot transition to unsafe states.
-
-| Deliverable | Status | SwiftVector Application |
-|-------------|--------|------------------------|
-| Waypoint data model | ⬜ | Immutable mission state |
-| Mission state and actions | ⬜ | MissionReducer with explicit transitions |
-| Tap-to-set waypoint UI | ⬜ | Actions proposed through orchestrator |
-| Geofence definition | ⬜ | Boundary state representation |
-| Geofence validation (pure functions) | ⬜ | Deterministic violation detection |
-| Safety interlocks | ⬜ | Explicit rule engine with traceable logic |
-| Mission upload to vehicle | ⬜ | Action-based upload with verification |
+| Deliverable | Status | Description |
+|-------------|--------|-------------|
+| CoreML model integration | ⏳ | Lightweight MobileNet-based model |
+| Tier 1 ML proposals | ⏳ | Onboard inference <100ms |
+| Deterministic thresholding | ⏳ | Fixed confidence bands |
+| Severity banding logic | ⏳ | Minor/Moderate/Significant classification |
+| Roof zone assignment | ⏳ | Field/Edge/Ridge/Valley/Penetration |
+| Grid deviation tracking | ⏳ | Position tolerance validation |
 
 **Success Criteria:**
-- Plan waypoint missions via tap interface
-- Define geofence boundaries
-- Prevent arming on geofence violation (100% interlock test coverage)
-- Upload mission to SITL
+- ML inference runs <100ms
+- Candidates match deterministic rules
+- Severity bands assigned correctly
+- Bounded workload (max candidates/zone)
 
-**Milestone:** Public GitHub announcement 🎉
-
-**Technical Writing Opportunity:** "Geofence Validation as Pure Functions: Safety-Critical Logic in Swift"
+**DJI Challenge Milestone:** Onboard AI operational
 
 ---
 
-### Phase 3: Autonomy-Aware Enhancements
+### Phase 3: ThermalLaw MVP - Export & Polish (May 2026)
 
-**Timeline:** Weeks 11-16  
-**T-Shirt Size:** M-L (Medium-Large)  
-**Primary Beneficiary:** Technical UAV Developer & Technical Authority
+**Focus:** Documentation Pack generation and UX refinement  
+**Target:** Professional client deliverable
 
-**Problem Solved:** Provides developers and auditors clear insight into aircraft's internal logical process. Moves beyond simple battery percentage to actionable intelligence. Shows awareness of broader aviation ecosystem.
-
-| Deliverable | Status | SwiftVector Application |
-|-------------|--------|------------------------|
-| State machine visualization UI | ⬜ | No representation gap—UI reflects actual state |
-| Battery consumption model | ⬜ | Deterministic calculation with confidence bounds |
-| Battery reserve warnings | ⬜ | Pure function: charge + distance + wind → estimate |
-| Wind estimation integration | ⬜ | Sensor fusion as pure functions |
-| ADS-B traffic display (simulated) | ⬜ | External state integration |
-| Deterministic replay system | ⬜ | Identical calculation pipelines as live |
+| Deliverable | Status | Description |
+|-------------|--------|-------------|
+| PDF report generation | ⏳ | Summary + flagged anomalies + coverage |
+| Image annotation | ⏳ | Bounding boxes, metadata overlays |
+| Coverage map visualization | ⏳ | Roof zone completion tracking |
+| UX polish | ⏳ | Approval flow, notifications, feedback |
+| Operator training materials | ⏳ | Workflow documentation |
 
 **Success Criteria:**
-- Visualize flight state machine
-- Predict battery reserve based on mission parameters
-- Display simulated traffic
-- Replay any flight with identical outputs
+- PDF export in <30s
+- Professional report quality
+- Operator workflow smooth
+- Coverage tracking accurate
 
-**Technical Writing Opportunities:**
-- "Deterministic Replay for Safety-Critical Systems"
-- "Battery Reserve Modeling: When AI Meets Physics"
+**DJI Challenge Milestone:** MVP feature-complete
 
 ---
 
-### Phase 4: Debrief & Replay
+### Phase 4: ThermalLaw MVP - Replay & Verification (June 2026)
 
-**Timeline:** Weeks 17-20  
-**T-Shirt Size:** M (Medium)  
-**Primary Beneficiary:** Technical Authority & Inspection Pilot
+**Focus:** Session replay and determinism verification  
+**Target:** DJI Challenge submission readiness
 
-**Problem Solved:** Allows visual review of entire flight envelope. Converts raw log data into digestible visualization. Ensures data integrity for compliance and audit.
-
-| Deliverable | Status | SwiftVector Application |
-|-------------|--------|------------------------|
-| Flight log data model | ⬜ | Complete state history preservation |
-| Flight path replay UI | ⬜ | Time-travel through state snapshots |
-| Telemetry graph visualization | ⬜ | State-derived visualizations |
-| Mission summary export (JSON, CSV) | ⬜ | Serializable state enables export |
-| Action audit trail viewer | ⬜ | Every action logged with attribution |
-| Decision attribution display | ⬜ | Source tracking (UI, telemetry, agent) |
+| Deliverable | Status | Description |
+|-------------|--------|-------------|
+| Replay engine | ⏳ | Identical outputs from audit log |
+| Integrity verifier | ⏳ | Hash chain validation |
+| Determinism test suite | ⏳ | 100% reproducibility |
+| Demo scenarios | ⏳ | Repeatable evaluation demos |
+| Challenge submission | ⏳ | Documentation package |
 
 **Success Criteria:**
-- Review complete flight path
-- Graph telemetry over time
-- Export mission reports
-- Trace any decision to its source
+- Replay produces identical outputs
+- Audit log integrity verified
+- Demo runs reliably (10/10 successes)
+- Documentation complete
 
-**Technical Writing Opportunity:** "Audit Trails for AI-Assisted Systems: Who Decided What and Why?"
+**DJI Challenge Milestone:** Submission ready
 
 ---
 
-### Phase 5: Deterministic Decision Support
+### Phase 5: SurveyLaw Specification (Q3 2026)
 
-**Timeline:** Weeks 21-28  
-**T-Shirt Size:** L (Large)  
-**Primary Beneficiary:** All Personas
+**Focus:** Precision mapping jurisdiction architecture  
+**Target:** RTK precision, grid generation, GSD compliance
 
-**Problem Solved:** Augments operator judgment without replacing it. Reduces mission planning cognitive load. Enables appropriate trust calibration through transparency.
-
-| Deliverable | Status | SwiftVector Application |
-|-------------|--------|------------------------|
-| Agent protocol definition | ⬜ | Agents propose, orchestrator validates |
-| Risk assessment agent | ⬜ | Pure function architecture |
-| Risk display UI | ⬜ | Confidence indicators |
-| Route optimization (constrained) | ⬜ | Respects geofences, airspace, energy |
-| Confidence indicator UI | ⬜ | Uncertainty propagation |
-| Explanation panel | ⬜ | Traceable reasoning chains |
-| Agent testing framework | ⬜ | Property-based determinism tests |
-| **Thermal anomaly detection agent** | ⬜ | Core ML integration point |
-
-**SwiftVector Proving Ground:**
-
-This phase is the primary SwiftVector integration point:
-
-- **Pure Function Architecture:** All decision logic implemented as pure functions
-- **Deterministic Evaluation:** Identical telemetry → identical assessment
-- **Traceable Reasoning:** Every output includes the logical chain
-- **Operator Override:** All recommendations are advisory
-- **Fail-Safe Defaults:** Uncertain inputs → conservative recommendations
-
-**Thermal Inspection Integration:**
-
-The thermal anomaly detection agent demonstrates deterministic processing of probabilistic ML outputs:
-
-```
-Thermal Frame → Core ML Model → Probabilistic Output → Deterministic Thresholding → Typed Action Proposal
-```
-
-See [THERMAL_INSPECTION_EXTENSION.md](docs/THERMAL_INSPECTION_EXTENSION.md) for detailed specification.
+| Deliverable | Status | Description |
+|-------------|--------|-------------|
+| SurveyLaw HLD + PRD | ✅ | Architecture documented |
+| Grid generation algorithm | 📋 | Deterministic parallel line generation |
+| RTK precision enforcement | 📋 | 2cm horizontal accuracy requirement |
+| GSD compliance validation | 📋 | Altitude + capture verification |
+| Gap detection | 📋 | Coverage hole identification |
+| Overlap analysis | 📋 | Image overlap calculation |
 
 **Success Criteria:**
-- Agents propose within boundaries
-- Deterministic recommendations (verified via replay)
-- Explainable decisions
-- Operator retains authority
-- Thermal anomaly detection functional on sample datasets
-
-**Technical Writing Opportunities:**
-- "SwiftVector in Practice: Deterministic AI for Safety-Critical Systems" (Major paper)
-- "The Explanation Panel: Building Trust in AI Recommendations"
-- "Edge AI for Thermal Inspection: Deterministic Processing of ML Outputs"
+- SurveyLaw architecture complete
+- Grid generation deterministic
+- RTK requirements defined
+- Ready for implementation
 
 ---
 
-## Future Possibilities
+### Phase 6: SurveyLaw Implementation (Q4 2026)
 
-### iOS Companion App
-- Subset of functionality for field use
-- iPhone/iPad optimized UI
+**Focus:** Engineering-grade surveying capability  
+**Target:** Civil engineering market entry
 
-### Multi-Vehicle Support
-- Fleet management
-- Coordinated missions
+| Deliverable | Status | Description |
+|-------------|--------|-------------|
+| RTK GPS integration | 📋 | D-RTK 2 Mobile Station |
+| Mission grid UI | 📋 | Interactive grid planning |
+| Real-time GSD monitoring | 📋 | Compliance validation during flight |
+| Post-flight QC report | 📋 | Gap detection, overlap analysis |
+| Survey Package export | 📋 | CAD/GIS compatible deliverables |
 
-### Hardware Integration
-- Physical controller support
-- External display output
+**Success Criteria:**
+- RTK fix acquisition <60s
+- Position accuracy <2cm (engineering tier)
+- GSD compliance >98%
+- Survey package export functional
 
-### Advanced AI
-- On-device LLM integration (CoreML)
-- Natural language mission input
+---
 
-### Thermal Inspection Suite
+## Future Jurisdictions
+
+### Potential Extensions
+
+**SearchLaw (Search & Rescue):**
+- Grid search pattern generation
+- Coverage optimization
+- Thermal/visible fusion for target detection
+- Multi-platform coordination
+
+**DeliveryLaw (Package Delivery):**
+- Route optimization with safety constraints
+- Precision landing validation
+- Payload state monitoring
+- Delivery confirmation
+
+**InfrastructureLaw (Asset Inspection):**
+- Structure-following flight paths
+- Defect classification
+- Change detection across inspections
+- Regulatory compliance documentation
+
+
 - Real-time anomaly detection during flight
 - Automated inspection report generation
 - Integration with Flightworks Aerial thermal services
@@ -323,42 +344,42 @@ See [THERMAL_INSPECTION_EXTENSION.md](docs/THERMAL_INSPECTION_EXTENSION.md) for 
 ## Technical Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Operator Interface                        │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
-│  │  Map View   │  │  Telemetry  │  │  Decision Support   │  │
-│  │             │  │   Display   │  │  (Recommendations)  │  │
-│  └──────┬──────┘  └──────┬──────┘  └──────────┬──────────┘  │
-└─────────┼────────────────┼───────────────────┼──────────────┘
-          │                │                   │
-          ▼                ▼                   ▼
-┌─────────────────────────────────────────────────────────────┐
-│              SwiftVector Decision Layer                      │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │  Pure Functions • Deterministic • Auditable         │    │
-│  │  ┌───────────┐ ┌───────────┐ ┌───────────────────┐  │    │
-│  │  │   Risk    │ │  Battery  │ │     Geofence      │  │    │
-│  │  │  Evaluator│ │  Modeler  │ │     Validator     │  │    │
-│  │  └───────────┘ └───────────┘ └───────────────────┘  │    │
-│  │  ┌───────────────────────────────────────────────┐  │    │
-│  │  │           Thermal Anomaly Agent               │  │    │
-│  │  │         (Core ML + Deterministic Post)        │  │    │
-│  │  └───────────────────────────────────────────────┘  │    │
-│  └─────────────────────────────────────────────────────┘    │
-└─────────────────────────────────────────────────────────────┘
-          │                │                   │
-          ▼                ▼                   ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   Telemetry Layer                            │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │  MAVSDK-Swift • Combine Streams • Error Recovery    │    │
-│  └─────────────────────────────────────────────────────┘    │
-└─────────────────────────────────────────────────────────────┘
-          │
-          ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   PX4 SITL / Hardware                        │
-└─────────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                    Operator Interface                        â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
+â”‚  â”‚  Map View   â”‚  â”‚  Telemetry  â”‚  â”‚  Decision Support   â”‚  â”‚
+â”‚  â”‚             â”‚  â”‚   Display   â”‚  â”‚  (Recommendations)  â”‚  â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+          â”‚                â”‚                   â”‚
+          â–¼                â–¼                   â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚              SwiftVector Decision Layer                      â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”    â”‚
+â”‚  â”‚  Pure Functions â€¢ Deterministic â€¢ Auditable         â”‚    â”‚
+â”‚  â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚    â”‚
+â”‚  â”‚  â”‚   Risk    â”‚ â”‚  Battery  â”‚ â”‚     Geofence      â”‚  â”‚    â”‚
+â”‚  â”‚  â”‚  Evaluatorâ”‚ â”‚  Modeler  â”‚ â”‚     Validator     â”‚  â”‚    â”‚
+â”‚  â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚    â”‚
+â”‚  â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚    â”‚
+â”‚  â”‚  â”‚           Thermal Anomaly Agent               â”‚  â”‚    â”‚
+â”‚  â”‚  â”‚         (Core ML + Deterministic Post)        â”‚  â”‚    â”‚
+â”‚  â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚    â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜    â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+          â”‚                â”‚                   â”‚
+          â–¼                â–¼                   â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                   Telemetry Layer                            â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”    â”‚
+â”‚  â”‚  MAVSDK-Swift â€¢ Combine Streams â€¢ Error Recovery    â”‚    â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜    â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+          â”‚
+          â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                   PX4 SITL / Hardware                        â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ### Key Architectural Decisions
@@ -428,18 +449,61 @@ These patterns extend to other safety-critical Swift applications:
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.0 | — | Initial product roadmap |
-| 2.0 | — | Added deployment strategy, risk assessment |
-| 3.0 | — | SwiftVector integration, Phase 5, architectural principles |
+| 1.0 | â€” | Initial product roadmap |
+| 2.0 | â€” | Added deployment strategy, risk assessment |
+| 3.0 | â€” | SwiftVector integration, Phase 5, architectural principles |
 | 4.0 | January 2026 | Unified engineering/product roadmap; thermal inspection extension; updated timelines |
 
 ---
 
 ## Related Documentation
 
-- [ARCHITECTURE.md](ARCHITECTURE.md) — Detailed system design
-- [SWIFTVECTOR.md](SWIFTVECTOR.md) — SwiftVector principles
-- [DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.md) — AI-assisted development workflow
-- [TESTING_STRATEGY.md](docs/TESTING_STRATEGY.md) — Verification approach
-- [THERMAL_INSPECTION_EXTENSION.md](docs/THERMAL_INSPECTION_EXTENSION.md) — Thermal anomaly detection spec
-- [CONTRIBUTING.md](CONTRIBUTING.md) — Contribution guidelines
+- [ARCHITECTURE.md](ARCHITECTURE.md) â€” Detailed system design
+- [SWIFTVECTOR.md](SWIFTVECTOR.md) â€” SwiftVector principles
+- [DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.md) â€” AI-assisted development workflow
+- [TESTING_STRATEGY.md](docs/TESTING_STRATEGY.md) â€” Verification approach
+- [THERMAL_INSPECTION_EXTENSION.md](docs/THERMAL_INSPECTION_EXTENSION.md) â€” Thermal anomaly detection spec
+- [CONTRIBUTING.md](CONTRIBUTING.md) â€” Contribution guidelines
+
+---
+
+## Suite Documentation
+
+### Architecture & Requirements
+
+| Document | Purpose |
+|----------|---------|
+| [Flightworks-Suite-Overview.md](docs/Flightworks-Suite-Overview.md) | Master suite architecture |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | SwiftVector implementation patterns |
+| **FlightLaw (Core)** | |
+| [HLD-FlightworksCore.md](docs/HLD-FlightworksCore.md) | Universal safety kernel architecture |
+| [PRD-FlightworksCore.md](docs/PRD-FlightworksCore.md) | FlightLaw requirements |
+| **ThermalLaw (Inspection)** | |
+| [HLD-FlightworksThermal.md](docs/HLD-FlightworksThermal.md) | Thermal inspection architecture |
+| [PRD-FlightworksThermal.md](docs/PRD-FlightworksThermal.md) | ThermalLaw requirements |
+| [DJI-Challenge-Submission.md](DJI_Challenge_Submission.md) | Competition submission (v0.3) |
+| **SurveyLaw (Mapping)** | |
+| [HLD-FlightworksSurvey.md](docs/HLD-FlightworksSurvey.md) | Precision mapping architecture |
+| [PRD-FlightworksSurvey.md](docs/PRD-FlightworksSurvey.md) | SurveyLaw requirements |
+
+### Development & Testing
+
+| Document | Purpose |
+|----------|---------|
+| [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) | AI-assisted development workflow |
+| [TESTING_STRATEGY.md](TESTING_STRATEGY.md) | Verification approach |
+| [SwiftVector-Codex.md](SwiftVector-Codex.md) | Constitutional framework |
+
+---
+
+## Revision History
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 1.0 | Initial | Original Flightworks Control monolithic roadmap |
+| 2.0 | Feb 2026 | **Jurisdiction-based architecture restructuring** |
+|  |  | • Split into FlightLaw + ThermalLaw + SurveyLaw |
+|  |  | • DJI Challenge focus (ThermalLaw MVP Phases 1-4) |
+|  |  | • SurveyLaw specification and implementation phases |
+|  |  | • Updated to reflect completed HLD/PRD documentation |
+

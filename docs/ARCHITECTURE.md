@@ -1,67 +1,144 @@
-# Flightworks Control Architecture
+# Flightworks Suite Architecture
 
 ## Overview
 
-Flightworks Control implements the SwiftVector architectural pattern—deterministic control around stochastic systems. This document describes the core architecture, design decisions, and extension patterns for edge AI integration.
+Flightworks Control implements the SwiftVector architectural patternâ€”deterministic control around stochastic systems. This document describes the core architecture, design decisions, and extension patterns for edge AI integration.
 
 **Key Architectural Principles:**
 
-1. **State is truth** — All system state is explicit, typed, and immutable
-2. **Actions are proposals** — Nothing changes state directly; all changes are validated
-3. **Reducers are authority** — Only pure functions can produce new state
-4. **Agents propose, don't command** — AI provides recommendations, operators decide
-5. **Everything is auditable** — Full logging enables replay and incident investigation
+1. **State is truth** â€” All system state is explicit, typed, and immutable
+2. **Actions are proposals** â€” Nothing changes state directly; all changes are validated
+3. **Reducers are authority** â€” Only pure functions can produce new state
+4. **Agents propose, don't command** â€” AI provides recommendations, operators decide
+5. **Everything is auditable** â€” Full logging enables replay and incident investigation
 
 ---
+
+## Jurisdiction Architecture
+
+The Flightworks Suite uses a **jurisdiction model** where mission-specific applications inherit universal safety guarantees from FlightLaw while adding domain-specific governance.
+
+### Jurisdiction Hierarchy
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│              SWIFTVECTOR CODEX                              │
+│         (Constitutional Framework)                          │
+│  Laws 0-10: Boundary, Context, Delegation, Observation,    │
+│  Resource, Sovereignty, Persistence, Spatial, Authority,    │
+│  Lifecycle, Protocol                                        │
+└─────────────────────────────────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────────┐
+│              FLIGHTLAW (Universal Safety Kernel)            │
+│  • Law 3 (Observation): Telemetry, pre-flight validation   │
+│  • Law 4 (Resource): Battery, thermal limits               │
+│  • Law 7 (Spatial): Geofencing, altitude limits            │
+│  • Law 8 (Authority): Risk-tiered operator approval        │
+│  • Audit trail with SHA256 hash chain                      │
+│  • Deterministic replay capability                         │
+└─────────────────────────────────────────────────────────────┘
+         │                              │
+         ▼                              ▼
+┌──────────────────┐          ┌──────────────────┐
+│   THERMALLAW     │          │    SURVEYLAW     │
+│                  │          │                  │
+│ • RGB/Thermal    │          │ • RTK precision  │
+│   detection      │          │   enforcement    │
+│ • Roof damage    │          │ • Grid adherence │
+│   classification │          │   validation     │
+│ • Severity bands │          │ • GSD compliance │
+│ • Operator       │          │   verification   │
+│   approval       │          │ • Gap detection  │
+│                  │          │ • Overlap calc.  │
+│ Platform: M4T    │          │ Platform: M4E    │
+│ Use: Inspection  │          │ Use: Surveying   │
+└──────────────────┘          └──────────────────┘
+```
+
+### Jurisdiction Composition Principle
+
+**FlightLaw provides universal guarantees:**
+- ✅ Battery reserve enforcement (RTL at 20%)
+- ✅ Geofence violation prevention
+- ✅ Pre-flight readiness validation
+- ✅ Tamper-evident audit trail
+- ✅ Deterministic replay
+
+**Domain jurisdictions extend FlightLaw:**
+- **ThermalLaw** = FlightLaw + thermal-specific governance
+  - Inherits all FlightLaw safety constraints
+  - Adds: Candidate classification, severity banding, approval workflow
+  
+- **SurveyLaw** = FlightLaw + survey-specific governance
+  - Inherits all FlightLaw safety constraints
+  - Adds: RTK precision requirements, grid validation, GSD enforcement
+
+**Business Guarantees:**
+- ThermalLaw: *"No critical damage will be missed or hallucinated"*
+- SurveyLaw: *"100% adherence to engineering-grade spatial grids"*
+
+### Jurisdiction Benefits
+
+| Benefit | Description |
+|---------|-------------|
+| **Code Reuse** | Safety logic written once in FlightLaw, inherited everywhere |
+| **Consistency** | Identical safety behavior across all jurisdictions |
+| **Modularity** | Add new jurisdictions without modifying FlightLaw |
+| **Certifiability** | Prove safety properties once, apply to all jurisdictions |
+
+---
+
 
 ## Core Pattern: SwiftVector
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                      Orchestrator                           │
-│                 (Coordinates control loop)                  │
-│          ┌─────────────────────────────────┐                │
-│          │  • Maintains current state      │                │
-│          │  • Validates action proposals   │                │
-│          │  • Dispatches to reducers       │                │
-│          │  • Triggers side effects        │                │
-│          │  • Maintains audit log          │                │
-│          └─────────────────────────────────┘                │
-└─────────────────────────────────────────────────────────────┘
-                              │
-         ┌────────────────────┼────────────────────┐
-         ▼                    ▼                    ▼
-┌─────────────┐      ┌─────────────┐      ┌─────────────┐
-│    State    │◀─────│   Reducer   │◀─────│   Action    │
-│ (Immutable) │      │(Pure Func)  │      │  (Typed)    │
-│             │      │             │      │             │
-│ • Equatable │      │ • No side   │      │ • Enum with │
-│ • Codable   │      │   effects   │      │   assoc.    │
-│ • Sendable  │      │ • Total     │      │   values    │
-└─────────────┘      │ • Safe      │      │ • Codable   │
-         │           └─────────────┘      └─────────────┘
-         │                                       ▲
-         │         ┌─────────────────────────────┘
-         ▼         │
-┌─────────────────────────────────────────────────────────────┐
-│                         Agents                              │
-│              (Observe state, propose actions)               │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
-│  │    Risk     │  │   Battery   │  │      Thermal        │  │
-│  │  Assessment │  │  Prediction │  │  Anomaly Detection  │  │
-│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                      Orchestrator                           â”‚
+â”‚                 (Coordinates control loop)                  â”‚
+â”‚          â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”                â”‚
+â”‚          â”‚  â€¢ Maintains current state      â”‚                â”‚
+â”‚          â”‚  â€¢ Validates action proposals   â”‚                â”‚
+â”‚          â”‚  â€¢ Dispatches to reducers       â”‚                â”‚
+â”‚          â”‚  â€¢ Triggers side effects        â”‚                â”‚
+â”‚          â”‚  â€¢ Maintains audit log          â”‚                â”‚
+â”‚          â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜                â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                              â”‚
+         â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+         â–¼                    â–¼                    â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”      â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”      â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚    State    â”‚â—€â”€â”€â”€â”€â”€â”‚   Reducer   â”‚â—€â”€â”€â”€â”€â”€â”‚   Action    â”‚
+â”‚ (Immutable) â”‚      â”‚(Pure Func)  â”‚      â”‚  (Typed)    â”‚
+â”‚             â”‚      â”‚             â”‚      â”‚             â”‚
+â”‚ â€¢ Equatable â”‚      â”‚ â€¢ No side   â”‚      â”‚ â€¢ Enum with â”‚
+â”‚ â€¢ Codable   â”‚      â”‚   effects   â”‚      â”‚   assoc.    â”‚
+â”‚ â€¢ Sendable  â”‚      â”‚ â€¢ Total     â”‚      â”‚   values    â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜      â”‚ â€¢ Safe      â”‚      â”‚ â€¢ Codable   â”‚
+         â”‚           â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜      â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+         â”‚                                       â–²
+         â”‚         â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+         â–¼         â”‚
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                         Agents                              â”‚
+â”‚              (Observe state, propose actions)               â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
+â”‚  â”‚    Risk     â”‚  â”‚   Battery   â”‚  â”‚      Thermal        â”‚  â”‚
+â”‚  â”‚  Assessment â”‚  â”‚  Prediction â”‚  â”‚  Anomaly Detection  â”‚  â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ### State
 
 State is the single source of truth. All state is:
 
-- **Immutable** — State objects are never modified, only replaced
-- **Typed** — Swift structs with explicit types
-- **Codable** — Serializable for persistence and replay
-- **Equatable** — Comparable for change detection
-- **Sendable** — Safe to pass across concurrency boundaries
+- **Immutable** â€” State objects are never modified, only replaced
+- **Typed** â€” Swift structs with explicit types
+- **Codable** â€” Serializable for persistence and replay
+- **Equatable** â€” Comparable for change detection
+- **Sendable** â€” Safe to pass across concurrency boundaries
 
 ```swift
 struct FlightState: Equatable, Codable, Sendable {
@@ -106,10 +183,10 @@ struct AppState: Equatable, Codable, Sendable {
 
 Actions describe proposed state changes. All actions are:
 
-- **Typed** — Enum cases with associated values
-- **Codable** — Serializable for audit trail
-- **Equatable** — Comparable for testing
-- **Sendable** — Safe for concurrent dispatch
+- **Typed** â€” Enum cases with associated values
+- **Codable** â€” Serializable for audit trail
+- **Equatable** â€” Comparable for testing
+- **Sendable** â€” Safe for concurrent dispatch
 
 ```swift
 enum FlightAction: Equatable, Codable, Sendable {
@@ -168,10 +245,10 @@ enum AppAction: Equatable, Codable, Sendable {
 
 Reducers apply actions to state. All reducers are:
 
-- **Pure functions** — No side effects
-- **Deterministic** — Same inputs always produce same outputs
-- **Total** — Handle all action types
-- **Safe** — Invalid actions return unchanged state
+- **Pure functions** â€” No side effects
+- **Deterministic** â€” Same inputs always produce same outputs
+- **Total** â€” Handle all action types
+- **Safe** â€” Invalid actions return unchanged state
 
 ```swift
 struct FlightReducer {
@@ -401,49 +478,49 @@ final class FlightOrchestrator: ObservableObject {
 ## Component Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                              App                                     │
-├─────────────────────────────────────────────────────────────────────┤
-│                              UI Layer                                │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐ │
-│  │  Map View   │  │  Telemetry  │  │   Mission   │  │   Thermal   │ │
-│  │             │  │   Display   │  │   Planning  │  │   Overlay   │ │
-│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘ │
-├─────────┼────────────────┼────────────────┼────────────────┼────────┤
-│         └────────────────┴────────────────┴────────────────┘        │
-│                                   │                                  │
-│                                   ▼                                  │
-│  ┌───────────────────────────────────────────────────────────────┐  │
-│  │                        Orchestrator                            │  │
-│  │              (State management, action dispatch)               │  │
-│  └───────────────────────────────────────────────────────────────┘  │
-│                                   │                                  │
-├───────────────────────────────────┼──────────────────────────────────┤
-│                    Decision Layer │                                  │
-│         ┌─────────────────────────┼─────────────────────────┐       │
-│         ▼                         ▼                         ▼       │
-│  ┌─────────────┐          ┌─────────────┐          ┌─────────────┐  │
-│  │   Flight    │          │   Mission   │          │   Thermal   │  │
-│  │   Reducer   │          │   Reducer   │          │   Reducer   │  │
-│  └─────────────┘          └─────────────┘          └─────────────┘  │
-│         │                         │                         │       │
-│         ▼                         ▼                         ▼       │
-│  ┌─────────────┐          ┌─────────────┐          ┌─────────────┐  │
-│  │   Safety    │          │  Geofence   │          │   Thermal   │  │
-│  │  Validator  │          │  Validator  │          │    Agent    │  │
-│  └─────────────┘          └─────────────┘          └─────────────┘  │
-│                                                                      │
-├─────────────────────────────────────────────────────────────────────┤
-│                           Telemetry Layer                            │
-│  ┌───────────────────────────────────────────────────────────────┐  │
-│  │                   DroneConnectionManager                       │  │
-│  │              (MAVLink, MAVSDK-Swift - Phase 1+)               │  │
-│  └───────────────────────────────────────────────────────────────┘  │
-│  ┌───────────────────────────────────────────────────────────────┐  │
-│  │                   ThermalCameraManager                         │  │
-│  │                (FLIR SDK, DJI SDK - Phase 5)                  │  │
-│  └───────────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                              App                                     â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚                              UI Layer                                â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”‚
+â”‚  â”‚  Map View   â”‚  â”‚  Telemetry  â”‚  â”‚   Mission   â”‚  â”‚   Thermal   â”‚ â”‚
+â”‚  â”‚             â”‚  â”‚   Display   â”‚  â”‚   Planning  â”‚  â”‚   Overlay   â”‚ â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”˜ â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚         â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜        â”‚
+â”‚                                   â”‚                                  â”‚
+â”‚                                   â–¼                                  â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
+â”‚  â”‚                        Orchestrator                            â”‚  â”‚
+â”‚  â”‚              (State management, action dispatch)               â”‚  â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
+â”‚                                   â”‚                                  â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚                    Decision Layer â”‚                                  â”‚
+â”‚         â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”       â”‚
+â”‚         â–¼                         â–¼                         â–¼       â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”          â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”          â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
+â”‚  â”‚   Flight    â”‚          â”‚   Mission   â”‚          â”‚   Thermal   â”‚  â”‚
+â”‚  â”‚   Reducer   â”‚          â”‚   Reducer   â”‚          â”‚   Reducer   â”‚  â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜          â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜          â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
+â”‚         â”‚                         â”‚                         â”‚       â”‚
+â”‚         â–¼                         â–¼                         â–¼       â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”          â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”          â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
+â”‚  â”‚   Safety    â”‚          â”‚  Geofence   â”‚          â”‚   Thermal   â”‚  â”‚
+â”‚  â”‚  Validator  â”‚          â”‚  Validator  â”‚          â”‚    Agent    â”‚  â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜          â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜          â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
+â”‚                                                                      â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚                           Telemetry Layer                            â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
+â”‚  â”‚                   DroneConnectionManager                       â”‚  â”‚
+â”‚  â”‚              (MAVLink, MAVSDK-Swift - Phase 1+)               â”‚  â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
+â”‚  â”‚                   ThermalCameraManager                         â”‚  â”‚
+â”‚  â”‚                (FLIR SDK, DJI SDK - Phase 5)                  â”‚  â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ---
@@ -494,36 +571,36 @@ final class FlightOrchestrator: ObservableObject {
 
 ```
 Action Proposed
-       │
-       ▼
-┌─────────────────────┐
-│  Type Validation    │ ← Compile-time (Swift type system)
-│  • Enum exhaustive  │
-│  • Associated types │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│  State Validation   │ ← Runtime (precondition checks in reducer)
-│  • Preconditions    │
-│  • Mode transitions │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│  Safety Validation  │ ← Runtime (SafetyValidator)
-│  • Geofence checks  │
-│  • Battery limits   │
-│  • Airspace rules   │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│  Action Applied     │
-│  • State updated    │
-│  • Audit logged     │
-│  • Effects triggered│
-└─────────────────────┘
+       â”‚
+       â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  Type Validation    â”‚ â† Compile-time (Swift type system)
+â”‚  â€¢ Enum exhaustive  â”‚
+â”‚  â€¢ Associated types â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+           â”‚
+           â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  State Validation   â”‚ â† Runtime (precondition checks in reducer)
+â”‚  â€¢ Preconditions    â”‚
+â”‚  â€¢ Mode transitions â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+           â”‚
+           â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  Safety Validation  â”‚ â† Runtime (SafetyValidator)
+â”‚  â€¢ Geofence checks  â”‚
+â”‚  â€¢ Battery limits   â”‚
+â”‚  â€¢ Airspace rules   â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+           â”‚
+           â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  Action Applied     â”‚
+â”‚  â€¢ State updated    â”‚
+â”‚  â€¢ Audit logged     â”‚
+â”‚  â€¢ Effects triggeredâ”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ### Safety Invariants
@@ -543,10 +620,10 @@ These invariants must always hold:
 
 When the system encounters uncertainty:
 
-1. **Default to safest action** — When in doubt, don't act
-2. **Alert operator** — Clear visual and audio notification
-3. **Log decision reasoning** — Full context for post-incident review
-4. **Never fail silently** — All failures are observable
+1. **Default to safest action** â€” When in doubt, don't act
+2. **Alert operator** â€” Clear visual and audio notification
+3. **Log decision reasoning** â€” Full context for post-incident review
+4. **Never fail silently** â€” All failures are observable
 
 ```swift
 enum SafetyResponse: Equatable {
@@ -663,19 +740,19 @@ extension FlightOrchestrator {
 
 Agents can reason freely but **cannot**:
 
-- ❌ Mutate state directly
-- ❌ Bypass reducer
-- ❌ Override safety validation
-- ❌ Execute without logging
-- ❌ Access external resources during proposal
+- âŒ Mutate state directly
+- âŒ Bypass reducer
+- âŒ Override safety validation
+- âŒ Execute without logging
+- âŒ Access external resources during proposal
 
 Agents **can**:
 
-- ✅ Observe complete state snapshot
-- ✅ Propose any valid action type
-- ✅ Provide confidence scores
-- ✅ Explain reasoning
-- ✅ Request operator attention
+- âœ… Observe complete state snapshot
+- âœ… Propose any valid action type
+- âœ… Provide confidence scores
+- âœ… Explain reasoning
+- âœ… Request operator attention
 
 ---
 
@@ -686,43 +763,43 @@ Agents **can**:
 Edge AI integration presents a challenge: ML models produce probabilistic outputs, but safety-critical systems require deterministic behavior. SwiftVector solves this by establishing a clear **determinism boundary**:
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    STOCHASTIC ZONE                                   │
-│                  (Probabilistic, variable)                          │
-│  ┌───────────────────────────────────────────────────────────────┐  │
-│  │                    ML Model Inference                          │  │
-│  │  • Neural network forward pass                                 │  │
-│  │  • Probabilistic outputs                                       │  │
-│  │  • May vary slightly between runs (GPU non-determinism)       │  │
-│  └───────────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────┘
-                                │
-                                ▼
-════════════════════════════════════════════════════════════════════════
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                    STOCHASTIC ZONE                                   â”‚
+â”‚                  (Probabilistic, variable)                          â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
+â”‚  â”‚                    ML Model Inference                          â”‚  â”‚
+â”‚  â”‚  â€¢ Neural network forward pass                                 â”‚  â”‚
+â”‚  â”‚  â€¢ Probabilistic outputs                                       â”‚  â”‚
+â”‚  â”‚  â€¢ May vary slightly between runs (GPU non-determinism)       â”‚  â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                                â”‚
+                                â–¼
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
                       DETERMINISM BOUNDARY
                (Fixed thresholds, explicit rules)
-════════════════════════════════════════════════════════════════════════
-                                │
-                                ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                    DETERMINISTIC ZONE                                │
-│                  (Reproducible, auditable)                          │
-│  ┌───────────────────────────────────────────────────────────────┐  │
-│  │              Deterministic Post-Processing                     │  │
-│  │  • Fixed threshold classification                              │  │
-│  │  • Explicit confidence banding                                 │  │
-│  │  • Rule-based type assignment                                  │  │
-│  │  • Typed action proposal generation                            │  │
-│  └───────────────────────────────────────────────────────────────┘  │
-│                                │                                     │
-│                                ▼                                     │
-│  ┌───────────────────────────────────────────────────────────────┐  │
-│  │                    SwiftVector Layer                           │  │
-│  │  • Reducer validates and applies                               │  │
-│  │  • Full audit trail                                            │  │
-│  │  • Deterministic replay                                        │  │
-│  └───────────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────┘
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+                                â”‚
+                                â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                    DETERMINISTIC ZONE                                â”‚
+â”‚                  (Reproducible, auditable)                          â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
+â”‚  â”‚              Deterministic Post-Processing                     â”‚  â”‚
+â”‚  â”‚  â€¢ Fixed threshold classification                              â”‚  â”‚
+â”‚  â”‚  â€¢ Explicit confidence banding                                 â”‚  â”‚
+â”‚  â”‚  â€¢ Rule-based type assignment                                  â”‚  â”‚
+â”‚  â”‚  â€¢ Typed action proposal generation                            â”‚  â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
+â”‚                                â”‚                                     â”‚
+â”‚                                â–¼                                     â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
+â”‚  â”‚                    SwiftVector Layer                           â”‚  â”‚
+â”‚  â”‚  â€¢ Reducer validates and applies                               â”‚  â”‚
+â”‚  â”‚  â€¢ Full audit trail                                            â”‚  â”‚
+â”‚  â”‚  â€¢ Deterministic replay                                        â”‚  â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ### Core ML Determinism Configuration
@@ -755,7 +832,7 @@ struct ThermalClassifier {
     static let mediumConfidenceThreshold = 0.70
     static let detectionThreshold = 0.50
     
-    /// Pure function: ML output → Classification
+    /// Pure function: ML output â†’ Classification
     static func classify(_ output: ThermalMLOutput) -> ThermalClassification? {
         // Below detection threshold: no classification
         guard output.anomalyProbability >= detectionThreshold else {
@@ -783,7 +860,7 @@ struct ThermalClassifier {
         )
     }
     
-    /// Pure function: temperature characteristics → anomaly type
+    /// Pure function: temperature characteristics â†’ anomaly type
     private static func classifyType(
         temperature: Double,
         delta: Double
@@ -832,57 +909,57 @@ protocol MLActionPipeline {
 
 ```
 FlightworksControl/
-├── App/
-│   └── FlightworksControlApp.swift
-│
-├── Core/                           ← SwiftVector implementation
-│   ├── State/
-│   │   ├── FlightState.swift
-│   │   ├── MissionState.swift
-│   │   ├── ThermalState.swift      ← Extension state
-│   │   └── SystemState.swift
-│   ├── Actions/
-│   │   ├── FlightAction.swift
-│   │   ├── MissionAction.swift
-│   │   ├── ThermalAction.swift     ← Extension actions
-│   │   └── Action.swift            ← Protocol
-│   ├── Reducers/
-│   │   ├── FlightReducer.swift
-│   │   ├── MissionReducer.swift
-│   │   ├── ThermalReducer.swift    ← Extension reducer
-│   │   └── Reducer.swift           ← Protocol
-│   └── Orchestrator/
-│       └── FlightOrchestrator.swift
-│
-├── Telemetry/                      ← MAVLink integration
-│   ├── MAVLinkConnection.swift
-│   ├── TelemetryStream.swift
-│   └── DroneConnectionManager.swift
-│
-├── UI/                             ← SwiftUI views
-│   ├── Components/
-│   ├── Screens/
-│   ├── Map/
-│   └── Thermal/                    ← Extension UI
-│
-├── Safety/                         ← Validation and interlocks
-│   ├── SafetyValidator.swift
-│   ├── GeofenceValidator.swift
-│   ├── BatteryMonitor.swift
-│   └── StateInterlocks.swift
-│
-├── Agents/                         ← AI decision support
-│   ├── AgentProtocol.swift
-│   ├── RiskAssessmentAgent.swift
-│   ├── BatteryPredictionAgent.swift
-│   └── ThermalAnomalyAgent.swift   ← Extension agent
-│
-└── ML/                             ← Machine learning
-    ├── ThermalModel.mlmodel
-    ├── DeterministicMLConfig.swift
-    └── ThermalClassifier.swift     ← Deterministic post-processing
+â”œâ”€â”€ App/
+â”‚   â””â”€â”€ FlightworksControlApp.swift
+â”‚
+â”œâ”€â”€ Core/                           â† SwiftVector implementation
+â”‚   â”œâ”€â”€ State/
+â”‚   â”‚   â”œâ”€â”€ FlightState.swift
+â”‚   â”‚   â”œâ”€â”€ MissionState.swift
+â”‚   â”‚   â”œâ”€â”€ ThermalState.swift      â† Extension state
+â”‚   â”‚   â””â”€â”€ SystemState.swift
+â”‚   â”œâ”€â”€ Actions/
+â”‚   â”‚   â”œâ”€â”€ FlightAction.swift
+â”‚   â”‚   â”œâ”€â”€ MissionAction.swift
+â”‚   â”‚   â”œâ”€â”€ ThermalAction.swift     â† Extension actions
+â”‚   â”‚   â””â”€â”€ Action.swift            â† Protocol
+â”‚   â”œâ”€â”€ Reducers/
+â”‚   â”‚   â”œâ”€â”€ FlightReducer.swift
+â”‚   â”‚   â”œâ”€â”€ MissionReducer.swift
+â”‚   â”‚   â”œâ”€â”€ ThermalReducer.swift    â† Extension reducer
+â”‚   â”‚   â””â”€â”€ Reducer.swift           â† Protocol
+â”‚   â””â”€â”€ Orchestrator/
+â”‚       â””â”€â”€ FlightOrchestrator.swift
+â”‚
+â”œâ”€â”€ Telemetry/                      â† MAVLink integration
+â”‚   â”œâ”€â”€ MAVLinkConnection.swift
+â”‚   â”œâ”€â”€ TelemetryStream.swift
+â”‚   â””â”€â”€ DroneConnectionManager.swift
+â”‚
+â”œâ”€â”€ UI/                             â† SwiftUI views
+â”‚   â”œâ”€â”€ Components/
+â”‚   â”œâ”€â”€ Screens/
+â”‚   â”œâ”€â”€ Map/
+â”‚   â””â”€â”€ Thermal/                    â† Extension UI
+â”‚
+â”œâ”€â”€ Safety/                         â† Validation and interlocks
+â”‚   â”œâ”€â”€ SafetyValidator.swift
+â”‚   â”œâ”€â”€ GeofenceValidator.swift
+â”‚   â”œâ”€â”€ BatteryMonitor.swift
+â”‚   â””â”€â”€ StateInterlocks.swift
+â”‚
+â”œâ”€â”€ Agents/                         â† AI decision support
+â”‚   â”œâ”€â”€ AgentProtocol.swift
+â”‚   â”œâ”€â”€ RiskAssessmentAgent.swift
+â”‚   â”œâ”€â”€ BatteryPredictionAgent.swift
+â”‚   â””â”€â”€ ThermalAnomalyAgent.swift   â† Extension agent
+â”‚
+â””â”€â”€ ML/                             â† Machine learning
+    â”œâ”€â”€ ThermalModel.mlmodel
+    â”œâ”€â”€ DeterministicMLConfig.swift
+    â””â”€â”€ ThermalClassifier.swift     â† Deterministic post-processing
 ```
-
+- ~~[THERMAL_INSPECTION_EXTENSION.md](THERMAL_INSPECTION_EXTENSION.md)~~ (See HLD-FlightworksThermal.md)
 ---
 
 ## Performance Considerations
@@ -907,14 +984,14 @@ FlightworksControl/
 
 ```
 Main Actor (UI Thread)
-├── Orchestrator
-├── State updates
-└── UI rendering
+â”œâ”€â”€ Orchestrator
+â”œâ”€â”€ State updates
+â””â”€â”€ UI rendering
 
 Background Actors
-├── TelemetryStream (dedicated)
-├── MLInference (dedicated)
-└── Agents (pooled)
+â”œâ”€â”€ TelemetryStream (dedicated)
+â”œâ”€â”€ MLInference (dedicated)
+â””â”€â”€ Agents (pooled)
 ```
 
 ---
@@ -924,7 +1001,7 @@ Background Actors
 ### Determinism Verification
 
 ```swift
-// Property: Same inputs → Same outputs (always)
+// Property: Same inputs â†’ Same outputs (always)
 func testReducerDeterminism() {
     let testCases = generateRandomStateActionPairs(count: 1000)
     
@@ -956,16 +1033,44 @@ See [TESTING_STRATEGY.md](TESTING_STRATEGY.md) for comprehensive testing documen
 
 ## References
 
-- [SwiftVector Whitepaper](https://agentincommand.ai/swiftvector) — Deterministic control architecture
-- [Swift at the Edge](https://agentincommand.ai/swift-at-the-edge) — On-device AI manifesto
-- [The Agency Paradox](https://agentincommand.ai/agency-paradox) — Human command over AI systems
-- [THERMAL_INSPECTION_EXTENSION.md](THERMAL_INSPECTION_EXTENSION.md) — Thermal feature specification
+- [SwiftVector Whitepaper](https://agentincommand.ai/swiftvector) â€” Deterministic control architecture
+- [Swift at the Edge](https://agentincommand.ai/swift-at-the-edge) â€” On-device AI manifesto
+- [The Agency Paradox](https://agentincommand.ai/agency-paradox) â€” Human command over AI systems
+- [THERMAL_INSPECTION_EXTENSION.md](THERMAL_INSPECTION_EXTENSION.md) â€” Thermal feature specification
 
 ---
 
 ## Related Documentation
 
-- [ROADMAP.md](ROADMAP.md) — Product roadmap
-- [SWIFTVECTOR.md](SWIFTVECTOR.md) — SwiftVector principles
-- [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) — Development workflow
-- [TESTING_STRATEGY.md](TESTING_STRATEGY.md) — Testing approach
+- [ROADMAP.md](ROADMAP.md) â€” Product roadmap
+- [SWIFTVECTOR.md](SWIFTVECTOR.md) â€” SwiftVector principles
+- [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) â€” Development workflow
+- [TESTING_STRATEGY.md](TESTING_STRATEGY.md) â€” Testing approach
+
+---
+
+## Suite Documentation
+
+### Architecture Documents
+
+| Document | Purpose |
+|----------|---------|
+| [Flightworks-Suite-Overview.md](docs/Flightworks-Suite-Overview.md) | Master suite architecture and jurisdiction model |
+| [HLD-FlightworksCore.md](docs/HLD-FlightworksCore.md) | FlightLaw technical architecture |
+| [PRD-FlightworksCore.md](docs/PRD-FlightworksCore.md) | FlightLaw requirements |
+| [HLD-FlightworksThermal.md](docs/HLD-FlightworksThermal.md) | ThermalLaw technical architecture |
+| [PRD-FlightworksThermal.md](docs/PRD-FlightworksThermal.md) | ThermalLaw requirements |
+| [HLD-FlightworksSurvey.md](docs/HLD-FlightworksSurvey.md) | SurveyLaw technical architecture |
+| [PRD-FlightworksSurvey.md](docs/PRD-FlightworksSurvey.md) | SurveyLaw requirements |
+
+### Archived Documents
+
+The following documents have been superseded by the jurisdiction-based architecture:
+
+| Document | Replaced By | Status |
+|----------|-------------|--------|
+| HLD-FlightworksControl.md | HLD-FlightworksCore.md + HLD-FlightworksThermal.md | Archived v1 |
+| PRD-FlightworksControl.md | PRD-FlightworksCore.md + PRD-FlightworksThermal.md | Archived v1 |
+| THERMAL_INSPECTION_EXTENSION.md | HLD-FlightworksThermal.md + PRD-FlightworksThermal.md | Archived v1 |
+
+See `archive/v1-monolithic/` for historical reference.
