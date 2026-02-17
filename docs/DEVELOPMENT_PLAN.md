@@ -2,8 +2,8 @@
 
 ## AI-Assisted Development with Human-in-Command Discipline
 
-**Version:** 2.0  
-**Date:** January 2026  
+**Version:** 3.0  
+**Date:** February 2026  
 **Project:** Flightworks Control GCS  
 **Methodology:** SwiftVector + Agency Paradox
 
@@ -11,9 +11,11 @@
 
 ## Executive Summary
 
-This plan outlines the development of Flightworks Control, an open-source Ground Control Station built in Swift/SwiftUI. The development process itself demonstrates the principles documented in the SwiftVector papers—deterministic architecture, human-in-command governance, and Swift-native edge computing.
+This plan outlines the development of Flightworks Control, a Ground Control Station built in Swift/SwiftUI with a Rust Edge Relay for MAVLink transport. The development process itself demonstrates the principles documented in the SwiftVector papers — deterministic architecture, human-in-command governance, and systems languages on the edge.
 
-**The meta-opportunity:** The development process is as valuable as the product. Every phase generates technical writing artifacts that promote SwiftVector, validate the Agency Paradox methodology, and build academic/professional portfolio value.
+The project is a two-language stack: Swift for governance and operator interface, Rust for protocol handling and transport-layer audit. Both languages provide compile-time safety, no garbage collection, and deterministic behavior — proving that the SwiftVector thesis is about *principles*, not a single language.
+
+**The meta-opportunity:** The development process is as valuable as the product. Every phase generates technical writing artifacts that promote SwiftVector, validate the Agency Paradox methodology, and build professional portfolio value. The addition of Rust expands the writing surface to "Systems Languages on the Edge."
 
 ---
 
@@ -21,48 +23,87 @@ This plan outlines the development of Flightworks Control, an open-source Ground
 
 ### Practicing What We Preach
 
-The SwiftVector papers describe how to build reliable AI systems. Flightworks Control builds one—using AI assistance—while documenting how the principles hold up in practice.
+The SwiftVector papers describe how to build reliable AI systems. Flightworks Control builds one — using AI assistance — while documenting how the principles hold up in practice.
 
 This creates authenticity: "Here's the theory. Here's the system we built using it. Here's what we learned."
+
+### SITL-First Development
+
+All development targets PX4 Software-In-The-Loop simulation. Hardware (Skydio X10 rental) is introduced only after software verification is complete. This:
+- Eliminates hardware capital risk
+- Enables repeatable test scenarios
+- Produces deterministic replay fixtures
+- Allows unlimited iteration without flight constraints
 
 ### The AI-Assisted Workflow
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                  You (Agent in Command)                     │
-│         Architecture • Safety • Scope • Authority           │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                  You (Agent in Command)                         │
+│         Architecture • Safety • Scope • Authority               │
+└─────────────────────────────────────────────────────────────────┘
                               │
               ┌───────────────┼───────────────┐
               ▼               ▼               ▼
       ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
-      │   Claude    │ │   Cursor    │ │   Xcode     │
-      │  (Strategy  │ │  (Code Gen  │ │Intelligence │
-      │  & Review)  │ │  & Refactor)│ │  (Inline)   │
+      │   Claude    │ │   Cursor    │ │   Xcode /   │
+      │  (Strategy  │ │  (Code Gen  │ │  Rust       │
+      │  & Review)  │ │  & Refactor)│ │  Analyzer   │
       └─────────────┘ └─────────────┘ └─────────────┘
               │               │               │
               └───────────────┼───────────────┘
                               ▼
-      ┌─────────────────────────────────────────────────────┐
-      │              Verification Loop                       │
-      │    Spec → Test → Implement → Verify → Review        │
-      └─────────────────────────────────────────────────────┘
+      ┌─────────────────────────────────────────────────────────┐
+      │              Verification Loop                           │
+      │    Spec → Test → Implement → Verify → Review            │
+      └─────────────────────────────────────────────────────────┘
                               │
                               ▼
-      ┌─────────────────────────────────────────────────────┐
-      │              Deterministic Codebase                  │
-      │         Auditable • Testable • Replayable           │
-      └─────────────────────────────────────────────────────┘
+      ┌─────────────────────────────────────────────────────────┐
+      │              Deterministic Codebase                      │
+      │         Auditable • Testable • Replayable               │
+      └─────────────────────────────────────────────────────────┘
 ```
 
 ### Tool Roles
 
 | Tool | Primary Use | Agency Paradox Role |
 |------|-------------|---------------------|
-| **Claude** | Architecture decisions, code review, documentation, strategic planning | Strategic advisor—proposes, you decide |
-| **Cursor** | Code generation, refactoring, test writing, boilerplate | Labor execution within defined scope |
-| **Xcode Intelligence** | Inline completion, quick fixes, API discovery | Tactical assistance during implementation |
-| **You** | Specification, architecture authority, safety review, final approval | Pilot in Command—always |
+| **Claude** | Architecture decisions, code review, documentation, strategic planning | Strategic advisor — proposes, you decide |
+| **Cursor** | Code generation (Swift & Rust), refactoring, test writing, boilerplate | Labor execution within defined scope |
+| **Xcode Intelligence** | Swift inline completion, quick fixes, API discovery | Tactical assistance during Swift implementation |
+| **Rust Analyzer** | Rust inline completion, borrow checker guidance, type resolution | Tactical assistance during Rust implementation |
+| **cargo clippy** | Rust linting and idiom enforcement | Automated quality gate |
+| **You** | Specification, architecture authority, safety review, final approval | Pilot in Command — always |
+
+### AI Tool Usage for Rust (Agency Paradox Discipline)
+
+The same governance principles apply to Rust development, with one critical addition: **ownership, borrowing, and lifetimes must be understood, not delegated.** These are the *point* of using Rust.
+
+**Use AI for:**
+- Explaining compiler errors after you've read and thought about them
+- Checking whether your approach is idiomatic (after you've written the code)
+- Generating test fixture data (known-good MAVLink frame bytes)
+- Boilerplate (Cargo.toml dependencies, CI workflow YAML)
+
+**Do not use AI for:**
+- Writing MAVLink decode functions (you need to understand byte manipulation)
+- "Fixing" borrow checker errors without understanding them (the error IS the lesson)
+- Ownership-related code patterns (write them wrong, understand, then fix)
+
+---
+
+## Requirements Traceability
+
+All development tasks derive from:
+- [PRD-FlightworksCore.md](docs/PRD-FlightworksCore.md) — What to build (FlightLaw)
+- [HLD-FlightworksCore.md](docs/HLD-FlightworksCore.md) — How to build it (FlightLaw)
+- [ROADMAP.md](ROADMAP.md) — Phase structure and success criteria
+- [RUST_LEARNING_PLAN.md](RUST_LEARNING_PLAN.md) — Edge Relay development guide
+
+Future jurisdiction development will trace to:
+- PRD/HLD-FlightworksThermal.md (ThermalLaw)
+- PRD/HLD-FlightworksSurvey.md (SurveyLaw)
 
 ---
 
@@ -83,13 +124,20 @@ flightworks-control/
 │   ├── SWIFTVECTOR.md
 │   ├── DEVELOPMENT_PLAN.md          ← This document
 │   ├── TESTING_STRATEGY.md
-│   ├── THERMAL_INSPECTION_EXTENSION.md
+│   ├── SwiftVector-Codex.md
+│   ├── Flightworks-Suite-Overview.md
+│   ├── HLD-FlightworksCore.md
+│   ├── PRD-FlightworksCore.md
+│   ├── HLD-FlightworksThermal.md    ← Future jurisdiction
+│   ├── PRD-FlightworksThermal.md    ← Future jurisdiction
+│   ├── HLD-FlightworksSurvey.md     ← Future jurisdiction
+│   ├── PRD-FlightworksSurvey.md     ← Future jurisdiction
 │   └── articles/                    ← Technical writing outputs
 │       ├── 01-building-deterministic-gcs.md
-│       ├── 02-realtime-telemetry-swift.md
+│       ├── 02-systems-languages-on-the-edge.md
 │       └── ...
 │
-├── FlightworksControl/              ← Main application
+├── FlightworksControl/              ← Swift/SwiftUI application (iPad)
 │   ├── App/
 │   │   └── FlightworksControlApp.swift
 │   │
@@ -97,23 +145,20 @@ flightworks-control/
 │   │   ├── State/
 │   │   │   ├── FlightState.swift
 │   │   │   ├── MissionState.swift
-│   │   │   ├── ThermalState.swift   ← Extension point
 │   │   │   └── SystemState.swift
 │   │   ├── Actions/
 │   │   │   ├── FlightAction.swift
 │   │   │   ├── MissionAction.swift
-│   │   │   ├── ThermalAction.swift  ← Extension point
 │   │   │   └── Action.swift
 │   │   ├── Reducers/
 │   │   │   ├── FlightReducer.swift
 │   │   │   ├── MissionReducer.swift
-│   │   │   ├── ThermalReducer.swift ← Extension point
 │   │   │   └── Reducer.swift
 │   │   └── Orchestrator/
 │   │       └── FlightOrchestrator.swift
 │   │
-│   ├── Telemetry/                   ← MAVLink integration
-│   │   ├── MAVLinkConnection.swift
+│   ├── Telemetry/                   ← Relay integration
+│   │   ├── RelayConnection.swift    ← UDP client receiving from Edge Relay
 │   │   ├── TelemetryStream.swift
 │   │   └── DroneConnectionManager.swift
 │   │
@@ -137,11 +182,8 @@ flightworks-control/
 │   │   ├── BatteryMonitor.swift
 │   │   └── StateInterlocks.swift
 │   │
-│   └── Agents/                      ← AI decision support (Phase 5)
-│       ├── AgentProtocol.swift
-│       ├── RiskAssessmentAgent.swift
-│       ├── BatteryPredictionAgent.swift
-│       └── ThermalAnomalyAgent.swift
+│   └── Agents/                      ← AI decision support (future)
+│       └── AgentProtocol.swift
 │
 ├── FlightworksControlTests/
 │   ├── Core/
@@ -151,23 +193,47 @@ flightworks-control/
 │   ├── Safety/
 │   │   ├── ValidatorTests.swift
 │   │   └── InterlockTests.swift
-│   ├── Agents/
-│   │   └── AgentDeterminismTests.swift
 │   └── Integration/
-│       └── ControlLoopTests.swift
+│       ├── ControlLoopTests.swift
+│       └── CrossLanguageDeterminismTests.swift
 │
-└── Tools/
-    ├── PX4-SITL/                    ← Simulation setup
-    └── Scripts/
+├── Tools/
+│   ├── EdgeRelay/                   ← Rust MAVLink relay
+│   │   ├── Cargo.toml
+│   │   ├── README.md
+│   │   ├── src/
+│   │   │   ├── main.rs
+│   │   │   ├── relay.rs            ← UDP forwarding core
+│   │   │   ├── mavlink.rs          ← MAVLink v2 header decode
+│   │   │   ├── allowlist.rs        ← Message ID filtering
+│   │   │   ├── audit.rs            ← JSONL audit logger
+│   │   │   ├── recorder.rs         ← Binary frame recording
+│   │   │   └── replay.rs           ← Deterministic playback
+│   │   ├── tests/
+│   │   │   ├── decode_tests.rs
+│   │   │   ├── replay_tests.rs
+│   │   │   └── fixtures/           ← Golden MAVLink recordings
+│   │   └── docs/
+│   │       └── INTEGRATION_NOTES.md
+│   │
+│   ├── PX4-SITL/                    ← Simulation setup
+│   │   └── sitl-quickstart.sh
+│   └── Scripts/
+│       └── full-pipeline.sh         ← PX4 SITL → Relay → GCS one-command launch
+│
+└── .github/
+    └── workflows/
+        ├── swift-ci.yml             ← Xcode build + test
+        └── rust-ci.yml              ← cargo fmt, clippy, test, build
 ```
 
 ---
 
 ## Phase Implementation Details
 
-### Phase 0: Foundation (Current)
+### Phase 0: FlightLaw Foundation (Swift)
 
-**Objective:** Establish project infrastructure and core SwiftVector patterns
+**Objective:** Establish core SwiftVector patterns and FlightLaw safety kernel
 
 #### Task Breakdown
 
@@ -181,9 +247,9 @@ flightworks-control/
 | Implement Reducer protocol | Claude + Cursor | Specify reducer contract | Reducer.swift |
 | Implement FlightReducer | Claude + Cursor | Verify determinism logic | FlightReducer.swift |
 | Implement Orchestrator | Claude + Cursor | Architecture review | FlightOrchestrator.swift |
-| Add ThermalState stub | Cursor | Define extension point | ThermalState.swift |
+| Implement AuditTrail (SHA256 hash chain) | Claude + Cursor | Verify tamper-evidence | AuditTrail.swift |
 | Write reducer determinism tests | Cursor | Define test cases | ReducerDeterminismTests.swift |
-| Set up CI/CD (GitHub Actions) | Cursor | Specify pipeline | .github/workflows/ |
+| Set up Swift CI (GitHub Actions) | Cursor | Specify pipeline | swift-ci.yml |
 | Write CHANGELOG initial entry | You | Document Phase 0 | CHANGELOG.md |
 
 #### Specification Example: FlightReducer
@@ -236,58 +302,80 @@ Apply FlightActions to FlightState deterministically.
 
 ---
 
-### Phase 1: Core Flight Interface
+### Phase 1: Edge Relay (Rust, parallel with Phase 0)
 
-**Objective:** Implement MVP telemetry display and map view
+**Objective:** Build the Rust MAVLink proxy with transport-layer audit
+
+See [RUST_LEARNING_PLAN.md](RUST_LEARNING_PLAN.md) for detailed weekly build targets. The learning plan IS the implementation plan — each week produces a working increment.
 
 #### Task Breakdown
 
 | Task | AI Tool | Your Role | Output |
 |------|---------|-----------|--------|
-| Design MAVLink connection state machine | Claude | Approve state diagram | Connection design doc |
-| Implement DroneConnectionManager | Cursor | Review error handling | DroneConnectionManager.swift |
-| Design telemetry data model | Claude | Define data shape | TelemetryData design |
+| Echo relay (synchronous UDP) | **You only** | Write from scratch — no AI | echo-relay binary |
+| Async migration (tokio) | Cursor (syntax only) | Understand async ownership | relay.rs |
+| MAVLink v2 header decode | **You only** | Understand byte manipulation | mavlink.rs |
+| Allowlist filter | Cursor | Specify message IDs | allowlist.rs |
+| JSONL audit logger (serde) | Cursor (boilerplate) | Verify serialization correctness | audit.rs |
+| Binary frame recorder | **You only** | Understand endianness, Write trait | recorder.rs |
+| Replay engine | Cursor | Verify timing accuracy | replay.rs |
+| CLI interface (clap) | Cursor | Specify CLI contract | main.rs |
+| Determinism integration test | **You only** | This IS the SwiftVector proof | replay_tests.rs |
+| Rust CI (GitHub Actions) | Cursor | Specify pipeline | rust-ci.yml |
+
+**Key principle:** The echo relay (Week 1) and MAVLink decode (Week 2) are written without AI assistance. These are where Rust's ownership model is learned. The borrow checker errors are the curriculum.
+
+---
+
+### Phase 2: Telemetry Integration (Swift + Rust)
+
+**Objective:** Connect FlightLaw to Edge Relay — live telemetry pipeline
+
+#### Task Breakdown
+
+| Task | AI Tool | Your Role | Output |
+|------|---------|-----------|--------|
+| Design DroneConnectionManager state machine | Claude | Approve state diagram | Connection design doc |
+| Implement RelayConnection (UDP client) | Cursor | Review error handling | RelayConnection.swift |
+| MAVLink → FlightAction mapping | Claude + Cursor | Define mapping rules | TelemetryMapper.swift |
 | Implement TelemetryStream (Combine) | Cursor | Verify backpressure handling | TelemetryStream.swift |
-| Implement TelemetryDisplay UI | Cursor + Xcode | Specify layout, review a11y | TelemetryDisplay.swift |
-| Implement FlightMapView | Cursor | Specify interactions | FlightMapView.swift |
-| Implement AircraftPuck | Cursor | Specify visual design | AircraftPuck.swift |
-| Implement StateIndicator | Cursor | Define state visualizations | StateIndicator.swift |
-| Add thermal telemetry placeholder | Cursor | Validate extension point | TelemetryData extension |
-| Implement TelemetryRecorder | Cursor | Specify format | TelemetryRecorder.swift |
-| PX4 SITL integration testing | You + Cursor | Test scenarios | Integration tests |
+| Basic telemetry display UI | Cursor + Xcode | Specify layout | TelemetryDisplay.swift |
+| Basic map with aircraft position | Cursor | Specify interactions | FlightMapView.swift |
+| Cross-language determinism test | **You** | This proves the thesis | CrossLanguageDeterminismTests.swift |
+| PX4 SITL quickstart script | Cursor | Specify pipeline | sitl-quickstart.sh |
+| Full pipeline launch script | Cursor | Specify orchestration | full-pipeline.sh |
 
-#### Key Technical Decisions
+#### Cross-Language Determinism Test Specification
 
-**Telemetry Stream Architecture:**
-```swift
-// Combine-based telemetry with deterministic state updates
-telemetryPublisher
-    .receive(on: DispatchQueue.main)
-    .map { FlightAction.updateTelemetry($0) }
-    .sink { [weak orchestrator] action in
-        orchestrator?.dispatch(action)
-    }
-```
+```markdown
+## Specification: CrossLanguageDeterminismTest
 
-**Thermal Extension Point:**
-```swift
-struct TelemetryData: Equatable, Codable, Sendable {
-    let position: Position?
-    let attitude: Attitude?
-    let battery: BatteryState?
-    let gpsInfo: GPSInfo?
-    let timestamp: Date
-    
-    // Phase 5 extension point
-    let thermalFrame: ThermalFrameMetadata?
-}
+### Purpose
+Prove that the same MAVLink recording produces identical audit trails
+from both the Rust Edge Relay and the Swift GCS.
+
+### Procedure
+1. Record a MAVLink session through the Rust relay (golden fixture)
+2. Replay through Rust relay → compare audit trail to original
+3. Feed same frames to Swift telemetry mapper → compare state sequence
+4. Assert: Rust audit events correspond 1:1 to Swift state transitions
+
+### Success Criteria
+- 100% frame correspondence (no dropped or added frames)
+- Audit trail hash chains match across languages
+- Timing-independent (determinism, not performance)
+
+### SwiftVector Alignment
+This is the architectural proof that deterministic governance
+works across a multi-language boundary. It validates the
+"systems languages on the edge" thesis.
 ```
 
 ---
 
-### Phase 2: Mission Planning
+### Phase 3: Mission Planning & Safety Validation (Swift)
 
-**Objective:** Implement waypoint and geofence functionality
+**Objective:** Waypoint missions with FlightLaw enforcement
 
 #### Task Breakdown
 
@@ -356,7 +444,7 @@ Development:
 5. Engage AI (Cursor/Claude) with specification
 6. Review generated code against spec
 7. Iterate until spec is met
-8. Run full test suite
+8. Run full test suite (Swift: xcodebuild test / Rust: cargo test)
 9. Commit with clear message
 
 End of Session:
@@ -364,6 +452,7 @@ End of Session:
 11. Note any deviations from spec
 12. Update task tracking in ROADMAP.md
 13. Update CHANGELOG.md if significant
+14. Write Rust journal entry (if Rust work was done)
 ```
 
 ### When to Use Each Tool
@@ -378,7 +467,7 @@ End of Session:
 - Questioning whether an approach is right
 
 **Use Cursor when:**
-- Implementing specified functionality
+- Implementing specified functionality (Swift or Rust)
 - Writing tests from test case specifications
 - Refactoring within defined scope
 - Generating boilerplate
@@ -386,10 +475,16 @@ End of Session:
 - Applying patterns consistently across codebase
 
 **Use Xcode Intelligence when:**
-- Inline completions during coding
+- Swift inline completions during coding
 - Quick API discovery
 - Simple refactors
 - Fix-it suggestions
+
+**Use Rust Analyzer / cargo clippy when:**
+- Rust inline completions
+- Understanding borrow checker suggestions
+- Enforcing idiomatic Rust patterns
+- Pre-commit quality gate
 
 ### Specification Template
 
@@ -405,10 +500,10 @@ Use this for every significant task:
 [Why this exists, what it connects to]
 
 ### Inputs
-[What data/state does this receive - be explicit about types]
+[What data/state does this receive — be explicit about types]
 
 ### Outputs
-[What does this produce - be explicit about types]
+[What does this produce — be explicit about types]
 
 ### Constraints
 - [Non-negotiable requirement 1]
@@ -447,14 +542,13 @@ Use this for every significant task:
 | Phase | Article | Target Venue | Timing |
 |-------|---------|--------------|--------|
 | 0 | Building a Deterministic GCS: SwiftVector Foundation | Dev.to, Medium | End of Phase 0 |
-| 1 | Real-Time Telemetry in Swift: Combine for Safety-Critical Data | Swift Forums, iOS Dev Weekly | Mid-Phase 1 |
-| 1 | Human-in-Command: AI-Assisted Development of a GCS | Dev.to, Hacker News | End of Phase 1 |
-| 2 | Geofence Validation as Pure Functions | Dev.to, consider IEEE | End of Phase 2 |
-| 3 | Deterministic Replay for Safety-Critical Systems | Dev.to, consider IEEE/AIAA | Mid-Phase 3 |
-| 3 | Battery Reserve Modeling: When AI Meets Physics | UAS publications | End of Phase 3 |
-| 4 | Audit Trails for AI-Assisted Systems | IEEE Aerospace consideration | End of Phase 4 |
-| 5 | SwiftVector in Practice (major paper) | IEEE/AIAA/arXiv | End of Phase 5 |
-| 5 | Edge AI for Thermal Inspection | UAS/Inspection publications | End of Phase 5 |
+| 1 | Rust on the Edge: Why Two Languages Are Better Than One | agentincommand.ai, Dev.to | End of Phase 1 |
+| 1 | Learning Rust from Swift: What Transfers and What Doesn't | Swift Forums, Rust community | Mid-Phase 1 |
+| 2 | Cross-Language Determinism: Proving Safety Across the Stack | Dev.to, Hacker News | End of Phase 2 |
+| 2 | Human-in-Command: AI-Assisted Development of a GCS | Dev.to, Hacker News | End of Phase 2 |
+| 3 | Geofence Validation as Pure Functions | Dev.to, consider IEEE | End of Phase 3 |
+| 4 | Deterministic Replay for Safety-Critical Systems | Dev.to, consider IEEE/AIAA | Mid-Phase 4 |
+| 4 | SwiftVector in Practice: Systems Languages on the Edge (major paper) | IEEE/AIAA/arXiv | End of Phase 4 |
 
 ### Article Template
 
@@ -471,7 +565,7 @@ Each article should follow:
 ### Content Repurposing
 
 Each article generates:
-- Blog post (full version)
+- Blog post on agentincommand.ai (full version)
 - Twitter/X thread (key points)
 - LinkedIn post (professional angle)
 - README section update (if applicable)
@@ -484,59 +578,51 @@ Each article generates:
 
 ### Pre-Announcement (Phase 0-1)
 
-- Soft mentions in Swift/UAS communities
+- Soft mentions in Swift/UAS/Rust communities
 - "Working on something interesting" posts
+- Rust journal entries as public learning-in-the-open content
 - Build anticipation without overpromising
 
 ### GitHub Announcement (End of Phase 2)
 
-**Timing:** When project has working mission planning functionality
+**Timing:** When project has working telemetry pipeline (Swift + Rust end-to-end)
 
 **README.md should include:**
-- Clear project description with screenshots
-- Architecture overview with diagram
-- Getting started instructions
+- Clear project description with architecture diagram
+- Two-language stack explanation
+- Getting started instructions (PX4 SITL + Relay + GCS)
 - Link to SwiftVector papers
 - Contribution guidelines
 
 **Announcement venues:**
-- Swift Forums
-- r/swift, r/drones, r/aerospace
+- Swift Forums, Rust community (users.rust-lang.org)
+- r/swift, r/rust, r/drones, r/aerospace
 - Hacker News (Show HN)
-- LinkedIn
-- X/Twitter
+- LinkedIn, X/Twitter
 
 ### agentincommand.ai Integration
 
-Create project page with:
-- Vision and goals
-- Development blog/updates
+- Project page with vision and architecture
+- Development blog / updates
 - Links to technical articles
 - Repository link
-- SwiftVector/Agency Paradox paper links
+- SwiftVector / Agency Paradox / "Systems Languages on the Edge" paper links
 
 ---
 
 ## Success Metrics
 
-### Project Health
-
-| Metric | 6-Month Target | 12-Month Target |
-|--------|----------------|-----------------|
-| GitHub stars | 100 | 500 |
-| Contributors | 3 | 10 |
-| Forks | 20 | 100 |
-| Open issues (healthy activity) | 10+ | 30+ |
-| Documentation coverage | 80% | 95% |
-
 ### Technical Quality
 
 | Metric | Target |
 |--------|--------|
-| Test coverage | >80% |
-| Build success rate | >99% |
+| Swift test coverage | >80% |
+| Rust test coverage | >80% |
+| Swift build success rate | >99% |
+| Rust clippy warnings | 0 |
 | Determinism tests | 100% pass |
 | Safety invariant tests | 100% pass |
+| Cross-language determinism | 100% correspondence |
 
 ### Visibility
 
@@ -545,7 +631,6 @@ Create project page with:
 | Technical articles published | 5+ |
 | Conference submissions | 1-2 |
 | Community mentions | 20+ |
-| Newsletter features | 2+ |
 
 ### Business Development
 
@@ -563,11 +648,12 @@ Create project page with:
 
 | Risk | Mitigation |
 |------|------------|
-| MAVSDK-Swift instability | Fallback to direct MAVLink parsing; robust error handling |
+| MAVLink integration complexity | Edge Relay isolates protocol handling; PX4 SITL for testing |
+| Rust learning curve | Scoped to well-defined relay; build genuine understanding over speed |
 | Performance issues | Profile early; optimize incrementally |
 | SwiftUI limitations | Hybrid UIKit where necessary |
 | Scope creep | Strict phase boundaries; specification discipline |
-| Thermal ML integration complexity | Start with simple threshold models; iterate |
+| Cross-language integration friction | Clean UDP + JSONL boundary; integration tests early |
 
 ### Schedule Risks
 
@@ -575,57 +661,23 @@ Create project page with:
 |------|------------|
 | AI-assisted development slower than expected | Build buffer into estimates; document learnings |
 | Unforeseen complexity | Scope reduction for MVP; defer to later phases |
-| Parallel commitments (drone acquisition, certs) | Flexible timeline; maintain momentum over speed |
+| Drone Command onboarding reduces available time | Flexible timeline; maintain momentum over speed |
 
-### Visibility Risks
+### Strategic Risks
 
 | Risk | Mitigation |
 |------|------------|
+| Drone Command acquires project; open-source status TBD | Architecture remains valuable regardless; maintain clean IP boundaries |
 | Project doesn't gain traction | Focus on quality over marketing; let work speak |
-| Criticism of approach | Engage constructively; document limitations honestly |
-| Similar projects emerge | Differentiate on SwiftVector principles; collaborate |
-
----
-
-## Integration with Flightworks Aerial
-
-### Thermal Inspection Synergy
-
-The thermal anomaly detection capability (Phase 5) directly supports Flightworks Aerial's commercial inspection services:
-
-1. **Development validates commercial use case** — Building the agent proves the concept
-2. **Commercial use generates training data** — Real inspections improve the model
-3. **Open source builds credibility** — Transparency supports enterprise sales
-4. **Grant funding potential** — Novel approach attracts SBIR/STTR interest
-
-### Timeline Alignment
-
-| Flightworks Aerial Milestone | GCS Development Phase |
-|------------------------------|----------------------|
-| Drone acquisition | Phase 0-1 |
-| Thermography certification | Phase 1-2 |
-| First commercial inspections | Phase 2-3 |
-| Thermal anomaly agent development | Phase 5 |
-| Integrated thermal inspection workflow | Post-Phase 5 |
-
----
-
-## Next Steps (This Week)
-
-1. **Finalize documentation suite** — Complete TESTING_STRATEGY.md, THERMAL_INSPECTION_EXTENSION.md
-2. **Create GitHub repository** with initial structure
-3. **Set up Xcode project** with SwiftUI app target
-4. **Implement State/Action/Reducer** protocols (Phase 0 core)
-5. **Write first test** for reducer determinism
-6. **Draft Article #1** outline ("Building a Deterministic GCS")
+| Similar projects emerge | Differentiate on SwiftVector principles and two-language determinism proof |
 
 ---
 
 ## Summary
 
-Flightworks Control is not just a GCS—it's a demonstration of SwiftVector principles, a validation of Agency Paradox methodology, and a portfolio piece for academic and professional advancement.
+Flightworks Control is not just a GCS — it's a demonstration of SwiftVector principles across two systems languages, a validation of Agency Paradox methodology, and a portfolio piece for professional advancement.
 
-The development process generates technical writing. The technical writing builds visibility. The visibility attracts collaborators and opportunities. The opportunities fund continued development.
+The two-language stack (Swift + Rust) strengthens every claim: determinism isn't just a Swift thing — it's a *systems architecture* thing. The boundary between languages becomes the most powerful proof point.
 
 **The virtuous cycle:**
 
@@ -633,7 +685,7 @@ The development process generates technical writing. The technical writing build
 Build → Document → Publish → Attract → Fund → Build more
 ```
 
-Start with Phase 0. Ship something real. Write about it. Repeat.
+Start with Phase 0 and Phase 1 in parallel. Ship something real in both languages. Prove they work together. Write about it. Repeat.
 
 ---
 
@@ -642,5 +694,6 @@ Start with Phase 0. Ship something real. Write about it. Repeat.
 - [ROADMAP.md](ROADMAP.md) — Product roadmap and phase details
 - [ARCHITECTURE.md](ARCHITECTURE.md) — System design
 - [TESTING_STRATEGY.md](TESTING_STRATEGY.md) — Verification approach
-- [THERMAL_INSPECTION_EXTENSION.md](THERMAL_INSPECTION_EXTENSION.md) — Thermal feature spec
+- [RUST_LEARNING_PLAN.md](RUST_LEARNING_PLAN.md) — Edge Relay Rust development guide
+- [SwiftVector-Codex.md](SwiftVector-Codex.md) — Constitutional framework
 - [CONTRIBUTING.md](../CONTRIBUTING.md) — Contribution guidelines

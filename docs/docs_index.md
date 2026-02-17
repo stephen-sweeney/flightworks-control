@@ -1,14 +1,16 @@
 # Flightworks Suite Documentation
 
-**Version:** 2.0.0  
+**Version:** 3.0.0  
 **Last Updated:** February 2026  
-**Project Status:** ThermalLaw MVP Development (DJI Challenge 2026)
+**Project Status:** FlightLaw Foundation + Rust Edge Relay (Parallel Development)
 
 ---
 
 ## Welcome
 
 This documentation covers the **Flightworks Suite**, an open-source jurisdiction-based architecture for governed drone operations. **FlightLaw** provides universal safety guarantees, extended by mission-specific jurisdictions (**ThermalLaw**, **SurveyLaw**) built on SwiftVector principles.
+
+The system uses a two-language stack: **Swift** for governance and operator interface, **Rust** for protocol handling and transport-layer audit — proving that deterministic architecture transcends any single language.
 
 Whether you're evaluating the project, contributing code, or learning about jurisdiction-based architecture, you'll find the relevant information organized below.
 
@@ -22,6 +24,7 @@ Whether you're evaluating the project, contributing code, or learning about juri
 | See the development roadmap | [ROADMAP.md](ROADMAP.md) |
 | Understand SwiftVector implementation | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | Learn about the constitutional framework | [SwiftVector-Codex.md](SwiftVector-Codex.md) |
+| Understand the Rust Edge Relay | [RUST_LEARNING_PLAN.md](RUST_LEARNING_PLAN.md) |
 | Contribute to the project | [CONTRIBUTING.md](../CONTRIBUTING.md) |
 | Set up development environment | [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) |
 | Understand testing approach | [TESTING_STRATEGY.md](TESTING_STRATEGY.md) |
@@ -38,37 +41,52 @@ flightworks-control/
 ├── CHANGELOG.md              ← Version history
 ├── LICENSE                   ← MIT License
 │
-└── docs/
-    ├── index.md              ← You are here
-    │
-    ├── Suite Architecture
-    │   ├── Flightworks-Suite-Overview.md     ← Master architecture document
-    │   ├── ARCHITECTURE.md                   ← SwiftVector patterns
-    │   ├── ROADMAP.md                        ← Development roadmap
-    │   └── SwiftVector-Codex.md              ← Constitutional framework
-    │
-    ├── FlightLaw (Universal Safety Kernel)
-    │   ├── HLD-FlightworksCore.md            ← FlightLaw architecture
-    │   └── PRD-FlightworksCore.md            ← FlightLaw requirements
-    │
-    ├── ThermalLaw (Thermal Inspection)
-    │   ├── HLD-FlightworksThermal.md         ← ThermalLaw architecture
-    │   ├── PRD-FlightworksThermal.md         ← ThermalLaw requirements
-    │   └── DJI-Challenge-Submission.md       ← Competition submission
-    │
-    ├── SurveyLaw (Precision Mapping)
-    │   ├── HLD-FlightworksSurvey.md          ← SurveyLaw architecture
-    │   └── PRD-FlightworksSurvey.md          ← SurveyLaw requirements
-    │
-    ├── Development
-    │   ├── DEVELOPMENT_PLAN.md               ← AI-assisted workflow
-    │   └── TESTING_STRATEGY.md               ← Testing strategy
-    │
-    └── archive/
-        └── v1-monolithic/                    ← Historical documents
-            ├── HLD-FlightworksControl.md
-            ├── PRD-FlightworksControl.md
-            └── THERMAL_INSPECTION_EXTENSION.md
+├── docs/
+│   ├── index.md              ← You are here
+│   │
+│   ├── Suite Architecture
+│   │   ├── Flightworks-Suite-Overview.md     ← Master architecture document
+│   │   ├── ARCHITECTURE.md                   ← SwiftVector patterns + Edge Relay
+│   │   ├── ROADMAP.md                        ← Development roadmap
+│   │   └── SwiftVector-Codex.md              ← Constitutional framework
+│   │
+│   ├── Foundation Papers
+│   │   ├── SWIFTVECTOR.md                    ← Deterministic control architecture
+│   │   ├── Swift-at-the-Edge.md              ← On-device AI manifesto
+│   │   ├── Agency-Paradox.md                 ← Human-AI governance framework
+│   │   └── certify-the-boundary.md           ← Certification through determinism
+│   │
+│   ├── FlightLaw (Universal Safety Kernel)
+│   │   ├── HLD-FlightworksCore.md            ← FlightLaw architecture
+│   │   └── PRD-FlightworksCore.md            ← FlightLaw requirements
+│   │
+│   ├── ThermalLaw (Thermal Inspection) — Future
+│   │   ├── HLD-FlightworksThermal.md         ← ThermalLaw architecture
+│   │   └── PRD-FlightworksThermal.md         ← ThermalLaw requirements
+│   │
+│   ├── SurveyLaw (Precision Mapping) — Future
+│   │   ├── HLD-FlightworksSurvey.md          ← SurveyLaw architecture
+│   │   └── PRD-FlightworksSurvey.md          ← SurveyLaw requirements
+│   │
+│   ├── Development
+│   │   ├── DEVELOPMENT_PLAN.md               ← AI-assisted workflow
+│   │   ├── TESTING_STRATEGY.md               ← Testing strategy
+│   │   └── RUST_LEARNING_PLAN.md             ← Edge Relay Rust development
+│   │
+│   └── archive/
+│       ├── v1-monolithic/                    ← Historical documents
+│       │   ├── HLD-FlightworksControl.md
+│       │   ├── PRD-FlightworksControl.md
+│       │   └── THERMAL_INSPECTION_EXTENSION.md
+│       └── v2-dji-challenge/                 ← DJI-era documents
+│           ├── DJI_Challenge_Submission_updated.md
+│           └── DOCUMENT_CONSOLIDATION_STRATEGY.md
+│
+└── Tools/
+    └── EdgeRelay/                            ← Rust MAVLink relay
+        ├── Cargo.toml
+        ├── README.md
+        └── src/
 ```
 
 ---
@@ -80,9 +98,18 @@ flightworks-control/
 | Document | Description | Audience |
 |----------|-------------|----------|
 | [Flightworks-Suite-Overview.md](Flightworks-Suite-Overview.md) | Master architecture, jurisdiction model | Everyone |
-| [ROADMAP.md](ROADMAP.md) | Development roadmap by jurisdiction | Product, Engineering |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | SwiftVector implementation patterns | Engineering |
+| [ROADMAP.md](ROADMAP.md) | Development roadmap by phase | Product, Engineering |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | SwiftVector patterns, Edge Relay, cross-language determinism | Engineering |
 | [SwiftVector-Codex.md](SwiftVector-Codex.md) | Constitutional framework (Laws 0-10) | Engineering, Research |
+
+### Foundation Papers
+
+| Document | Description | Audience |
+|----------|-------------|----------|
+| [SWIFTVECTOR.md](SWIFTVECTOR.md) | Deterministic control architecture specification | Research, Engineering |
+| [Swift-at-the-Edge.md](Swift-at-the-Edge.md) | On-device AI manifesto | Research |
+| [Agency-Paradox.md](Agency-Paradox.md) | Human-AI governance framework | Research, Leadership |
+| [certify-the-boundary.md](certify-the-boundary.md) | Why deterministic boundaries enable certification | Research, Compliance |
 
 ### FlightLaw (Universal Safety Kernel)
 
@@ -93,17 +120,16 @@ flightworks-control/
 
 **Covers:** Laws 3, 4, 7, 8 • Audit trail • Replay engine • Safety enforcement
 
-### ThermalLaw (Thermal Inspection)
+### ThermalLaw (Thermal Inspection) — *Future*
 
 | Document | Description | Audience |
 |----------|-------------|----------|
 | [HLD-FlightworksThermal.md](HLD-FlightworksThermal.md) | ThermalLaw technical architecture | Engineering |
 | [PRD-FlightworksThermal.md](PRD-FlightworksThermal.md) | ThermalLaw requirements specification | Engineering, Product |
-| [DJI-Challenge-Submission.md](DJI_Challenge_Submission.md) | DJI Challenge 2026 submission (v0.3) | Competition |
 
-**Covers:** Post-hail roof assessment • RGB detection • Governed AI • ML post-processing • Documentation Pack • Session replay
+**Covers:** Post-hail roof assessment • RGB detection • Governed AI • ML post-processing • Session replay
 
-### SurveyLaw (Precision Mapping)
+### SurveyLaw (Precision Mapping) — *Future*
 
 | Document | Description | Audience |
 |----------|-------------|----------|
@@ -118,6 +144,7 @@ flightworks-control/
 |----------|-------------|----------|
 | [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) | AI-assisted workflow, task breakdowns | Engineering |
 | [TESTING_STRATEGY.md](TESTING_STRATEGY.md) | Testing approach, determinism verification | Engineering, QA |
+| [RUST_LEARNING_PLAN.md](RUST_LEARNING_PLAN.md) | Edge Relay Rust development guide | Engineering |
 | [CONTRIBUTING.md](../CONTRIBUTING.md) | Contribution guidelines, code standards | Contributors |
 | [CHANGELOG.md](../CHANGELOG.md) | Version history, release notes | Everyone |
 
@@ -125,22 +152,22 @@ flightworks-control/
 
 ## Project Timeline
 
-### Current Focus: ThermalLaw MVP (DJI Challenge 2026)
+### Current Focus: FlightLaw + Edge Relay
 
 | Phase | Timeline | Status | Focus |
 |-------|----------|--------|-------|
-| **Phase 0** | Feb 2026 | ✅ Complete | FlightLaw specification |
-| **Phase 1** | Mar 2026 | ⏳ Next | ThermalLaw foundation (session, capture, approval) |
-| **Phase 2** | Apr 2026 | 📋 Planned | ML integration (CoreML, classification) |
-| **Phase 3** | May 2026 | 📋 Planned | Export & polish (PDF, coverage, UX) |
-| **Phase 4** | Jun 2026 | 📋 Planned | Replay & verification (determinism proof) |
+| **Phase 0** | Feb–Mar 2026 | ⏳ Active | FlightLaw Foundation (Swift): State/Action/Reducer, Laws 3/4/7/8, audit trail |
+| **Phase 1** | Feb–Mar 2026 | ⏳ Active (parallel) | Edge Relay (Rust): UDP relay, MAVLink v2 decode, JSONL audit, recording/replay |
+| **Phase 2** | Apr 2026 | 📋 Planned | Telemetry Integration: Swift ↔ Rust pipeline, cross-language determinism proof |
+| **Phase 3** | May–Jun 2026 | 📋 Planned | Mission Planning & Safety: Waypoints, geofence, battery, state interlocks |
+| **Phase 4** | Jul–Aug 2026 | 📋 Planned | Replay, Verification & Field Readiness — **Hardware Gate:** Rent Skydio X10 |
 
 ### Future Jurisdictions
 
-| Phase | Timeline | Status | Focus |
-|-------|----------|--------|-------|
-| **Phase 5** | Q3 2026 | ✅ Specified | SurveyLaw specification |
-| **Phase 6** | Q4 2026 | 📋 Planned | SurveyLaw implementation (RTK, grid, GSD) |
+| Jurisdiction | Timeline | Status | Focus |
+|--------------|----------|--------|-------|
+| **ThermalLaw** | TBD | ✅ Specified | Thermal inspection governance |
+| **SurveyLaw** | TBD | ✅ Specified | Precision mapping governance |
 
 See [ROADMAP.md](ROADMAP.md) for detailed phase descriptions.
 
@@ -155,11 +182,11 @@ The Flightworks Suite uses a **jurisdiction model** where mission-specific appli
 ```
 FlightLaw (Universal Safety)
     │
-    ├─→ ThermalLaw (Thermal Inspection)
+    ├─→ ThermalLaw (Thermal Inspection) — Future
     │   • Inherits Laws 3, 4, 7, 8
     │   • Adds: Candidate classification, severity banding
     │
-    └─→ SurveyLaw (Precision Mapping)
+    └─→ SurveyLaw (Precision Mapping) — Future
         • Inherits Laws 3, 4, 7, 8
         • Adds: RTK precision, grid validation, GSD compliance
 ```
@@ -171,6 +198,22 @@ FlightLaw (Universal Safety)
 - **Certifiability:** Prove safety properties once, apply everywhere
 
 Learn more: [Flightworks-Suite-Overview.md](Flightworks-Suite-Overview.md)
+
+### Two-Language Architecture
+
+```
+iPad (Swift GCS)                    ← Governance, UI, operator interaction
+  ↓ UDP (typed telemetry actions)
+Language Boundary (UDP + JSONL)     ← Auditable, independently verifiable
+  ↓ UDP (raw MAVLink v2)
+Edge Relay (Rust)                   ← Protocol handling, transport audit
+  ↓ UDP (MAVLink v2)
+PX4 SITL / Skydio X10              ← Flight platform
+```
+
+Both languages provide compile-time safety, no garbage collection, and deterministic behavior. The boundary between them is itself the strongest proof point.
+
+Learn more: [ARCHITECTURE.md](ARCHITECTURE.md)
 
 ### SwiftVector Architecture
 
@@ -201,7 +244,7 @@ Variable Timing      →  Fixed Thresholds
 
 This enables **auditable, reproducible** AI-assisted decision support with **mathematical proof** of determinism.
 
-Learn more: [HLD-FlightworksThermal.md](HLD-FlightworksThermal.md#determinism-boundary-architecture)
+Learn more: [ARCHITECTURE.md](ARCHITECTURE.md#edge-ai-extension-architecture)
 
 ### Human-in-Command Development
 
@@ -213,21 +256,21 @@ Development follows **Agency Paradox** principles:
 
 **"AI proposes, humans decide, Laws enforce"**
 
-Learn more: [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md)
+Learn more: [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md), [Agency-Paradox.md](Agency-Paradox.md)
 
 ---
 
 ## Jurisdiction Comparison
 
-| Aspect | FlightLaw | ThermalLaw | SurveyLaw |
+| Aspect | FlightLaw | ThermalLaw *(future)* | SurveyLaw *(future)* |
 |--------|-----------|------------|-----------|
 | **Purpose** | Universal safety | Thermal inspection | Precision mapping |
-| **Platform** | Any MAVLink | DJI M4T | DJI M4E |
-| **Status** | ✅ Specified | ⏳ MVP in progress | ✅ Specified |
+| **Platform** | PX4/MAVLink (any) | TBD | TBD |
+| **Status** | ⏳ Active development | ✅ Specified | ✅ Specified |
 | **Laws** | 3, 4, 7, 8 | FlightLaw + thermal governance | FlightLaw + survey governance |
-| **Key Feature** | Audit trail | Governed AI detection | RTK precision |
+| **Key Feature** | Audit trail + deterministic replay | Governed AI detection | RTK precision |
 | **Business Guarantee** | Safety enforcement | No damage missed/hallucinated | 100% grid adherence |
-| **Target Market** | Foundation | Inspection services | Civil engineering |
+| **Target Market** | Public safety, defense, fire | Inspection services | Civil engineering |
 
 ---
 
@@ -246,9 +289,10 @@ Learn more: [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md)
 | Resource | Description |
 |----------|-------------|
 | [PX4 User Guide](https://docs.px4.io/) | PX4 autopilot documentation |
-| [MAVSDK Documentation](https://mavsdk.mavlink.io/) | MAVLink SDK reference |
-| [DJI Developer](https://developer.dji.com/) | DJI SDK and platform docs |
+| [MAVLink Protocol](https://mavlink.io/en/) | MAVLink v2 specification |
 | [Swift Documentation](https://swift.org/documentation/) | Swift language reference |
+| [The Rust Book](https://doc.rust-lang.org/book/) | Rust language reference |
+| [tokio](https://tokio.rs/) | Async runtime for Rust |
 
 ---
 
@@ -275,6 +319,12 @@ This documentation is maintained alongside the codebase. When contributing:
 
 | Date | Version | Changes |
 |------|---------|---------|
+| February 2026 | 3.0.0 | **Strategic pivot: DJI removed, Rust Edge Relay added** |
+|  |  | • Added Edge Relay and RUST_LEARNING_PLAN.md |
+|  |  | • Updated timeline to FlightLaw + Relay parallel development |
+|  |  | • Removed DJI Challenge references and DJI platform targets |
+|  |  | • Added foundation papers section |
+|  |  | • Archived DJI-era documents |
 | February 2026 | 2.0.0 | **Jurisdiction-based architecture restructuring** |
 |  |  | • Split into FlightLaw + ThermalLaw + SurveyLaw |
 |  |  | • Added HLD/PRD for each jurisdiction |

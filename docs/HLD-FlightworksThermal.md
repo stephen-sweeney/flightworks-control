@@ -1,17 +1,17 @@
 # Flightworks Thermal: High-Level Design (ThermalLaw Jurisdiction)
 
 **Document:** HLD-FT-THERMAL-2026-001  
-**Version:** 1.0  
+**Version:** 2.0  
 **Date:** February 2026  
 **Author:** Stephen Sweeney, Flightworks Aerial LLC  
-**Status:** Active Development (DJI Challenge MVP)  
+**Status:** Specified (Future Jurisdiction — development after FlightLaw foundation)  
 **Classification:** Public
 
 ---
 
 ## Document Purpose
 
-This High-Level Design (HLD) specifies **Flightworks Thermal**—the ThermalLaw jurisdiction that extends FlightLaw for thermal inspection operations. The MVP implementation targets the **DJI Drone Onboard AI Challenge 2026** with a focused scope: **post-hail roof assessment using visible imagery as primary signal, with thermal as secondary**.
+This High-Level Design (HLD) specifies **Flightworks Thermal**â€”the ThermalLaw jurisdiction that extends FlightLaw for thermal inspection operations. The MVP scope is **post-hail roof assessment using visible imagery as primary signal, with thermal as secondary**. ThermalLaw is the first jurisdiction to demonstrate governed AI processing of probabilistic ML outputs through deterministic post-processing.
 
 **ThermalLaw = FlightLaw + Thermal-Specific Governance**
 
@@ -35,10 +35,10 @@ This High-Level Design (HLD) specifies **Flightworks Thermal**—the ThermalLaw 
 ### Extending FlightLaw
 
 ThermalLaw **inherits** all FlightLaw guarantees:
-- ✅ Laws 3, 4, 7, 8 enforcement
-- ✅ Tamper-evident audit trail
-- ✅ Deterministic state transitions
-- ✅ Operator authority (Law 8)
+- âœ… Laws 3, 4, 7, 8 enforcement
+- âœ… Tamper-evident audit trail
+- âœ… Deterministic state transitions
+- âœ… Operator authority (Law 8)
 
 ThermalLaw **adds** domain-specific governance:
 - Thermal sensor state management
@@ -49,52 +49,52 @@ ThermalLaw **adds** domain-specific governance:
 ### The Determinism Boundary
 
 ```
-┌──────────────────────────────────────────────────────────────┐
-│                    STOCHASTIC ZONE                           │
-│  (Non-deterministic, probabilistic)                          │
-│                                                              │
-│  • Thermal sensor radiometric data (noise, calibration)     │
-│  • RGB camera imagery (lighting, compression artifacts)     │
-│  • ML model inference (probabilistic outputs)               │
-│  • Bounding boxes with confidence scores                    │
-└──────────────────────────────────────────────────────────────┘
-                            │
-                            │ ThermalMLOutput / RoofMLOutput
-                            ▼
-┌──────────────────────────────────────────────────────────────┐
-│                  THERMALLAW REDUCER                          │
-│              (Deterministic Processing)                      │
-│                                                              │
-│  func reduce(state: ThermalState,                           │
-│              action: ThermalAction) -> ThermalState {        │
-│                                                              │
-│    // Apply fixed, auditable thresholds                     │
-│    switch action {                                           │
-│    case .inferenceCompleted(let output):                    │
-│      let candidates = classifyCandidates(                   │
-│        output: output,                                       │
-│        thresholds: state.thresholds  // Compile-time config │
-│      )                                                       │
-│      return state.withProposedCandidates(candidates)        │
-│                                                              │
-│    case .approveCandidate(let id):                          │
-│      // Law 8: Operator approval required                   │
-│      return state.withFlaggedAnomaly(id)                    │
-│    }                                                         │
-│  }                                                           │
-└──────────────────────────────────────────────────────────────┘
-                            │
-                            │ RoofCandidate / ThermalAnomaly
-                            ▼
-┌──────────────────────────────────────────────────────────────┐
-│                 DETERMINISTIC OUTPUT                         │
-│                                                              │
-│  • GPS-locked candidate location                            │
-│  • Severity classification (Minor/Moderate/Significant)     │
-│  • Image references (frame IDs, crops)                      │
-│  • Audit log entry with hash                                │
-│  • Operator approval requirement (Law 8)                    │
-└──────────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                    STOCHASTIC ZONE                           â”‚
+â”‚  (Non-deterministic, probabilistic)                          â”‚
+â”‚                                                              â”‚
+â”‚  â€¢ Thermal sensor radiometric data (noise, calibration)     â”‚
+â”‚  â€¢ RGB camera imagery (lighting, compression artifacts)     â”‚
+â”‚  â€¢ ML model inference (probabilistic outputs)               â”‚
+â”‚  â€¢ Bounding boxes with confidence scores                    â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                            â”‚
+                            â”‚ ThermalMLOutput / RoofMLOutput
+                            â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                  THERMALLAW REDUCER                          â”‚
+â”‚              (Deterministic Processing)                      â”‚
+â”‚                                                              â”‚
+â”‚  func reduce(state: ThermalState,                           â”‚
+â”‚              action: ThermalAction) -> ThermalState {        â”‚
+â”‚                                                              â”‚
+â”‚    // Apply fixed, auditable thresholds                     â”‚
+â”‚    switch action {                                           â”‚
+â”‚    case .inferenceCompleted(let output):                    â”‚
+â”‚      let candidates = classifyCandidates(                   â”‚
+â”‚        output: output,                                       â”‚
+â”‚        thresholds: state.thresholds  // Compile-time config â”‚
+â”‚      )                                                       â”‚
+â”‚      return state.withProposedCandidates(candidates)        â”‚
+â”‚                                                              â”‚
+â”‚    case .approveCandidate(let id):                          â”‚
+â”‚      // Law 8: Operator approval required                   â”‚
+â”‚      return state.withFlaggedAnomaly(id)                    â”‚
+â”‚    }                                                         â”‚
+â”‚  }                                                           â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                            â”‚
+                            â”‚ RoofCandidate / ThermalAnomaly
+                            â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                 DETERMINISTIC OUTPUT                         â”‚
+â”‚                                                              â”‚
+â”‚  â€¢ GPS-locked candidate location                            â”‚
+â”‚  â€¢ Severity classification (Minor/Moderate/Significant)     â”‚
+â”‚  â€¢ Image references (frame IDs, crops)                      â”‚
+â”‚  â€¢ Audit log entry with hash                                â”‚
+â”‚  â€¢ Operator approval requirement (Law 8)                    â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ---
@@ -108,10 +108,10 @@ ThermalLaw **adds** domain-specific governance:
 ### Composed Laws
 
 ```
-ThermalLaw = FlightLaw ∘ ThermalGovernance
+ThermalLaw = FlightLaw âˆ˜ ThermalGovernance
 
 where:
-  FlightLaw = Law 3 ∘ Law 4 ∘ Law 7 ∘ Law 8
+  FlightLaw = Law 3 âˆ˜ Law 4 âˆ˜ Law 7 âˆ˜ Law 8
   ThermalGovernance = {
     Candidate Classification Rules,
     Severity Banding Logic,
@@ -120,14 +120,14 @@ where:
   }
 ```
 
-### DJI Challenge MVP Scope
+### MVP Scope
 
 **Primary Detection:** Visible imagery (RGB, zoom camera)  
 **Secondary Detection:** Thermal imagery (follow-on moisture cues)  
-**Platform:** DJI Matrice 4T (Algorithms on Aircraft)  
+**Platform:** PX4/MAVLink-compatible aircraft (Skydio X10 for field testing)  
 **Deployment:** Onboard inference, edge-first architecture
 
-**Workflow:** Observe → Infer → Explain → Approve → Flag → Export → Replay
+**Workflow:** Observe â†’ Infer â†’ Explain â†’ Approve â†’ Flag â†’ Export â†’ Replay
 
 ---
 
@@ -501,50 +501,50 @@ actor ThermalLawEnforcer {
 ### Onboard Inference Architecture
 
 ```
-┌──────────────────────────────────────────────────────────────┐
-│                 DJI Matrice 4T Cameras                       │
-│  • Wide camera (48MP, RGB)                                   │
-│  • Tele camera (48MP, 7x optical zoom)                       │
-│  • Thermal camera (640×512 → 1280×1024)                      │
-└──────────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-┌──────────────────────────────────────────────────────────────┐
-│              Frame Processing (Algorithms on Aircraft)       │
-│  • Image normalization                                       │
-│  • Frame metadata extraction (GPS, timestamp, gimbal)       │
-│  • Inference queue management                                │
-└──────────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-┌──────────────────────────────────────────────────────────────┐
-│                   ML Model Inference                         │
-│  • Model: CoreML (iOS) or TensorRT (Manifold 3)             │
-│  • Input: RGB frame (resized to model dims)                 │
-│  • Output: Bounding boxes + confidence scores               │
-│  • Latency target: <100ms per frame                         │
-└──────────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-┌──────────────────────────────────────────────────────────────┐
-│            Deterministic Post-Processing                     │
-│  (ThermalReducer.classifyCandidates)                        │
-│  • Threshold filtering                                       │
-│  • Severity banding                                          │
-│  • Roof zone assignment                                      │
-│  • Bounded candidate queue                                   │
-└──────────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-┌──────────────────────────────────────────────────────────────┐
-│                  Candidate Queue (UI)                        │
-│  • Operator review                                           │
-│  • Approve/reject with notes                                 │
-│  • Severity band display                                     │
-└──────────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                 Aircraft Camera Payload                       â”‚
+â”‚  â€¢ Wide camera (48MP, RGB)                                   â”‚
+â”‚  â€¢ Tele camera (48MP, 7x optical zoom)                       â”‚
+â”‚  â€¢ Thermal camera (640Ã—512 â†’ 1280Ã—1024)                      â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                            â”‚
+                            â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚              Frame Processing (Edge-First Pipeline)       â”‚
+â”‚  â€¢ Image normalization                                       â”‚
+â”‚  â€¢ Frame metadata extraction (GPS, timestamp, gimbal)       â”‚
+â”‚  â€¢ Inference queue management                                â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                            â”‚
+                            â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                   ML Model Inference                         â”‚
+â”‚  â€¢ Model: CoreML (iPad GCS) or platform-native inference framework             â”‚
+â”‚  â€¢ Input: RGB frame (resized to model dims)                 â”‚
+â”‚  â€¢ Output: Bounding boxes + confidence scores               â”‚
+â”‚  â€¢ Latency target: <100ms per frame                         â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                            â”‚
+                            â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚            Deterministic Post-Processing                     â”‚
+â”‚  (ThermalReducer.classifyCandidates)                        â”‚
+â”‚  â€¢ Threshold filtering                                       â”‚
+â”‚  â€¢ Severity banding                                          â”‚
+â”‚  â€¢ Roof zone assignment                                      â”‚
+â”‚  â€¢ Bounded candidate queue                                   â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                            â”‚
+                            â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                  Candidate Queue (UI)                        â”‚
+â”‚  â€¢ Operator review                                           â”‚
+â”‚  â€¢ Approve/reject with notes                                 â”‚
+â”‚  â€¢ Severity band display                                     â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
-### Model Tiers (DJI Challenge Strategy)
+### Model Tiers (Phased Development)
 
 **Tier 0: Baseline (Deterministic Candidate Finder)**
 - Rule-based edge detection + color analysis
@@ -555,14 +555,14 @@ actor ThermalLawEnforcer {
 **Tier 1: Onboard ML (Primary MVP)**
 - Lightweight CoreML model (MobileNet-based)
 - Trained on hail damage dataset
-- Inference on aircraft (no Manifold 3 required)
+- Inference on iPad GCS (CoreML)
 - Deliverable: April 2026
 
-**Tier 2: Enhanced (Optional Manifold 3)**
+**Tier 2: Enhanced (Edge Compute)**
 - Larger model for higher accuracy
 - Higher frame rate processing
 - Thermal fusion for moisture detection
-- Deliverable: If justified by evaluation feedback
+- Deliverable: When field testing validates Tier 1 approach
 
 ---
 
@@ -673,15 +673,15 @@ struct CandidateCard: View {
 
 ```
 Documentation_Pack_<SessionID>.zip
-├── manifest.json              # Session metadata, summary
-├── report.pdf                 # Human-readable report
-├── flagged_anomalies.json     # Structured data
-├── images/
-│   ├── candidate_001.jpg
-│   ├── candidate_002.jpg
-│   └── ...
-└── audit/
-    └── session_audit.json     # Complete audit trail
+â”œâ”€â”€ manifest.json              # Session metadata, summary
+â”œâ”€â”€ report.pdf                 # Human-readable report
+â”œâ”€â”€ flagged_anomalies.json     # Structured data
+â”œâ”€â”€ images/
+â”‚   â”œâ”€â”€ candidate_001.jpg
+â”‚   â”œâ”€â”€ candidate_002.jpg
+â”‚   â””â”€â”€ ...
+â””â”€â”€ audit/
+    â””â”€â”€ session_audit.json     # Complete audit trail
 ```
 
 ### Manifest Schema
@@ -692,7 +692,7 @@ Documentation_Pack_<SessionID>.zip
   "inspectionType": "postHailRoof",
   "timestamp": "2026-02-05T14:30:00Z",
   "aircraft": {
-    "model": "Matrice 4T",
+    "model": "<aircraft_model>",
     "serialNumber": "...",
     "firmware": "..."
   },
@@ -721,8 +721,8 @@ Documentation_Pack_<SessionID>.zip
   ],
   "modelInfo": {
     "version": "roof-hail-v1.2",
-    "framework": "CoreML",
-    "inferenceDevice": "Matrice4T-CPU"
+    "framework": "<inference_framework>",
+    "inferenceDevice": "<inference_device>"
   }
 }
 ```
@@ -804,23 +804,23 @@ struct ThermalReplayEngine {
 
 | Platform | Status | Notes |
 |----------|--------|-------|
-| **DJI Matrice 4T** | ✅ Primary | RGB + thermal cameras |
-| **iPad Pro (M2+)** | ✅ Primary | Operator interface |
-| **Manifold 3** | 🔄 Optional | Tier 2 enhancement |
-| **iPhone 15 Pro** | 📋 Future | Field companion |
+| **PX4/MAVLink Aircraft** | Primary | Any RGB + thermal capable platform |
+| **iPad Pro (M2+)** | âœ… Primary | Operator interface |
+| **Skydio X10** | Likely field platform | U.S.-manufactured, government market |
+| **iPhone 15 Pro** | ðŸ“‹ Future | Field companion |
 
 ---
 
 ## Performance Targets
 
-| Metric | Target | DJI Challenge |
+| Metric | Target | Priority |
 |--------|--------|---------------|
-| Frame processing | ≥10 FPS | Competitive |
-| ML inference latency | <100ms | Competitive |
-| Candidate proposal latency | <500ms | Acceptable |
-| Approval action response | <100ms | Critical |
-| Export generation time | <30s | Acceptable |
-| Replay verification time | <session duration / 10 | Acceptable |
+| Frame processing | â‰¥10 FPS | Competitive |
+| ML inference latency | <100ms | P0 |
+| Candidate proposal latency | <500ms | P0 |
+| Approval action response | <100ms | P0 |
+| Export generation time | <30s | P1 |
+| Replay verification time | <session duration / 10 | P1 |
 
 ---
 
@@ -831,8 +831,9 @@ struct ThermalReplayEngine {
 | [Flightworks-Suite-Overview.md](./Flightworks-Suite-Overview.md) | Suite architecture |
 | [HLD-FlightworksCore.md](./HLD-FlightworksCore.md) | FlightLaw foundation |
 | [PRD-FlightworksThermal.md](./PRD-FlightworksThermal.md) | ThermalLaw requirements |
-| [DJI-Challenge-Submission.md](./DJI-Challenge-Submission.md) | Competition submission |
-| [DJI-MVP-Scope-Delta.md](./DJI-MVP-Scope-Delta.md) | MVP scope definition |
+| [HLD-FlightworksFire.md](./HLD-FlightworksFire.md) | FireLaw jurisdiction (sibling) |
+| [HLD-FlightworksISR.md](./HLD-FlightworksISR.md) | ISRLaw jurisdiction (sibling) |
+| [HLD-FlightworksSurvey.md](./HLD-FlightworksSurvey.md) | SurveyLaw jurisdiction (sibling) |
 
 ---
 
@@ -840,7 +841,8 @@ struct ThermalReplayEngine {
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
-| 1.0 | Feb 2026 | S. Sweeney | Initial ThermalLaw HLD for DJI Challenge |
+| 2.0 | Feb 2026 | S. Sweeney | Strategic update: DJI references removed, platform-agnostic architecture, aligned with five-jurisdiction model |
+| 1.0 | Feb 2026 | S. Sweeney | Initial ThermalLaw HLD (DJI Challenge era) |
 
 ---
 
@@ -848,22 +850,22 @@ struct ThermalReplayEngine {
 
 - **Owner:** Stephen Sweeney, Flightworks Aerial LLC
 - **Review Cycle:** Weekly during MVP development
-- **Distribution:** Internal, DJI Challenge submission
+- **Distribution:** Internal, open-source project documentation
 
 ---
 
 ## Conclusion
 
-Flightworks Thermal (ThermalLaw) extends FlightLaw with domain-specific governance for thermal inspection. The DJI Challenge MVP demonstrates that **probabilistic ML outputs can be processed deterministically** while maintaining operator authority and full auditability.
+Flightworks Thermal (ThermalLaw) extends FlightLaw with domain-specific governance for thermal inspection. The architecture demonstrates that **probabilistic ML outputs can be processed deterministically** while maintaining operator authority and full auditability.
 
 **Key Innovation:** The determinism boundary cleanly separates:
 - **Stochastic:** ML model inference
 - **Deterministic:** Classification, severity banding, approval workflow, export
 
 This architecture enables:
-1. **Reproducibility:** Same session → same candidates → same flags (given same approvals)
+1. **Reproducibility:** Same session â†’ same candidates â†’ same flags (given same approvals)
 2. **Auditability:** Complete decision trail from capture through flagging
 3. **Certifiability:** Deterministic processing of non-deterministic inputs
 4. **Operator Trust:** AI proposes, operator decides, system enforces
 
-The result is a **governed AI inspection workflow** that is fast, repeatable, and trustworthy—exactly what the post-hail roof assessment market requires.
+The result is a **governed AI inspection workflow** that is fast, repeatable, and trustworthyâ€”exactly what the post-hail roof assessment market requires.

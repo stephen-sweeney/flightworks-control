@@ -1,17 +1,17 @@
 # Flightworks Thermal: Product Requirements Document (ThermalLaw)
 
 **Document:** PRD-FT-THERMAL-2026-001  
-**Version:** 1.0  
+**Version:** 2.0  
 **Date:** February 2026  
 **Author:** Stephen Sweeney, Flightworks Aerial LLC  
-**Status:** Active Development (DJI Challenge MVP)  
+**Status:** Specified (Future Jurisdiction — development after FlightLaw foundation)  
 **Classification:** Public
 
 ---
 
 ## Executive Summary
 
-Flightworks Thermal is a governed AI inspection application for **post-hail roof assessment**, targeting the **DJI Drone Onboard AI Challenge 2026**. Built on the FlightLaw safety kernel, it demonstrates how probabilistic ML outputs can be processed deterministically to create a trustworthy, auditable inspection workflow.
+Flightworks Thermal is a governed AI inspection application for **post-hail roof assessment**. Built on the FlightLaw safety kernel, it demonstrates how probabilistic ML outputs can be processed deterministically to create a trustworthy, auditable inspection workflow.
 
 ### Core Value Proposition
 
@@ -24,14 +24,14 @@ Flightworks Thermal is a governed AI inspection application for **post-hail roof
 - **Session Replay:** Deterministic verification of identical outputs
 - **Edge-First:** All processing onboard aircraft, no cloud dependency
 
-### DJI Challenge Alignment
+### Strategic Alignment
 
-| Challenge Requirement | Flightworks Thermal Approach |
-|----------------------|------------------------------|
-| **Practical Value** | Real commercial workflow (Flightworks Aerial services) |
-| **Innovation** | Governed AI with deterministic post-processing |
-| **Deployment** | Algorithms on Aircraft (Matrice 4T native) |
-| **Verification** | Session replay proves reproducibility |
+| Strategic Goal | Flightworks Thermal Approach |
+|----------------|------------------------------|
+| **Commercial Value** | Real commercial workflow (Flightworks Aerial services) |
+| **Governed AI** | Deterministic post-processing of probabilistic ML outputs |
+| **Edge-First** | Onboard inference, no cloud dependency |
+| **Certifiability** | Session replay proves reproducibility |
 
 ---
 
@@ -125,7 +125,7 @@ Flightworks Thermal is a governed AI inspection application for **post-hail roof
 8. Operator delivers PDF report to client
 
 **Success Criteria:**
-- All roof zones covered (≥85% coverage per zone)
+- All roof zones covered (â‰¥85% coverage per zone)
 - Candidates proposed within 500ms of detection
 - Operator approval/rejection <5s per candidate
 - Documentation Pack generated in <30s
@@ -150,7 +150,7 @@ Flightworks Thermal is a governed AI inspection application for **post-hail roof
    - Coverage completeness
    - Candidate proposal consistency
    - Operator decision rationale
-4. System confirms: identical state hashes → deterministic replay
+4. System confirms: identical state hashes â†’ deterministic replay
 
 **Success Criteria:**
 - Replay produces identical candidate count
@@ -188,7 +188,7 @@ Flightworks Thermal is a governed AI inspection application for **post-hail roof
 
 | ID | Requirement | Priority | Verification |
 |----|-------------|----------|--------------|
-| FR-3.1 | Inference shall run onboard aircraft (Algorithms on Aircraft) | P0 | Deployment test |
+| FR-3.1 | Inference shall run on-device (edge-first, no cloud dependency) | P0 | Deployment test |
 | FR-3.2 | Inference latency shall be <100ms per frame | P0 | Performance test |
 | FR-3.3 | Model version shall be logged in session metadata | P0 | Audit test |
 | FR-3.4 | Inference failures shall be logged, not crash app | P0 | Fault injection test |
@@ -209,10 +209,10 @@ Flightworks Thermal is a governed AI inspection application for **post-hail roof
 
 | Confidence | Area (pixels) | Severity Band |
 |------------|---------------|---------------|
-| ≥0.85 | Any | Significant |
-| 0.70-0.84 | ≥200 | Moderate |
+| â‰¥0.85 | Any | Significant |
+| 0.70-0.84 | â‰¥200 | Moderate |
 | 0.70-0.84 | <200 | Minor |
-| 0.50-0.69 | ≥500 | Moderate |
+| 0.50-0.69 | â‰¥500 | Moderate |
 | 0.50-0.69 | <500 | Minor |
 | <0.50 | Any | Rejected |
 
@@ -287,7 +287,7 @@ Flightworks Thermal is a governed AI inspection application for **post-hail roof
 
 | ID | Requirement | Target | Verification |
 |----|-------------|--------|--------------|
-| NFR-2.1 | Frame processing rate | ≥10 FPS | Load test |
+| NFR-2.1 | Frame processing rate | â‰¥10 FPS | Load test |
 | NFR-2.2 | ML inference latency | <100ms | Performance profiling |
 | NFR-2.3 | Candidate proposal latency | <500ms end-to-end | Integration test |
 | NFR-2.4 | Approval action response | <100ms | UI responsiveness test |
@@ -313,7 +313,7 @@ Flightworks Thermal is a governed AI inspection application for **post-hail roof
 
 ## Success Metrics
 
-### DJI Challenge Metrics
+### MVP Success Metrics
 
 | Metric | Target |
 |--------|--------|
@@ -351,16 +351,16 @@ Flightworks Thermal is a governed AI inspection application for **post-hail roof
 
 | Component | Specification |
 |-----------|---------------|
-| Aircraft | DJI Matrice 4T |
-| Cameras | Wide (48MP), Tele (48MP 7x), Thermal (640×512) |
+| Aircraft | PX4/MAVLink-compatible (Skydio X10 for field testing) |
+| Cameras | RGB + thermal capable payload (platform-dependent) |
 | Operator Interface | iPad Pro (M2+), iOS 17+ |
-| Inference | Onboard (Algorithms on Aircraft) |
+| Inference | CoreML on iPad GCS (edge-first) |
 
 ### Optional Enhancements
 
 | Component | Phase | Notes |
 |-----------|-------|-------|
-| Manifold 3 | Phase B | Higher throughput, larger models |
+| Edge compute module | Phase B | Higher throughput, larger models |
 | Cloud export | Phase C | Fleet reporting, archive |
 | iPhone companion | Future | Field reference app |
 
@@ -440,20 +440,20 @@ Flightworks Thermal is a governed AI inspection application for **post-hail roof
 
 ---
 
-### Phase 5: DJI Challenge Evaluation (June 2026)
+### Phase 5: Field Validation
 
-**Goal:** Competition readiness
+**Goal:** Real-world operational readiness
 
 **Deliverables:**
-- Manifold 3 deployment (if needed)
+- Hardware integration testing (Skydio X10 or similar)
 - Final UX polish
-- Evaluation demos
-- Documentation package
+- Field demonstration scenarios
+- Operational documentation package
 
 **Success Criteria:**
 - Demo reliability 100%
 - Technical documentation complete
-- Evaluation team confident
+- Field operators confident in workflow
 
 ---
 
@@ -463,10 +463,10 @@ Flightworks Thermal is a governed AI inspection application for **post-hail roof
 
 | Constraint | Impact | Mitigation |
 |------------|--------|------------|
-| Matrice 4T compute limits | Model complexity | Lightweight MobileNet-based models |
+| iPad compute limits | Model complexity | Lightweight MobileNet-based CoreML models |
 | Battery life (25-30 min) | Coverage per flight | Systematic flight planning |
 | No cloud connectivity | All processing onboard | Edge-first architecture |
-| iOS CoreML limitations | Model format | ONNX → CoreML conversion |
+| CoreML constraints | Model format | ONNX → CoreML conversion pipeline |
 
 ### Business Constraints
 
@@ -474,14 +474,13 @@ Flightworks Thermal is a governed AI inspection application for **post-hail roof
 |------------|--------|------------|
 | Single developer (Phase 1-3) | Scope management | MVP focus, phased delivery |
 | Hail season timing (spring) | Field testing window | Early prototyping with existing data |
-| DJI Challenge timeline | Development pressure | Weekly milestones, scope clarity |
 
 ### Assumptions
 
 | Assumption | Risk if Invalid | Validation |
 |------------|-----------------|------------|
 | RGB sufficient for hail detection | Detection quality poor | Prototype with real hail imagery |
-| CoreML adequate for onboard inference | Performance inadequate | Benchmark early |
+| CoreML adequate for iPad inference | Performance inadequate | Benchmark early |
 | Operators accept approval workflow | UX friction | User testing |
 | Documentation Pack meets client needs | Client dissatisfaction | Sample report review |
 
@@ -489,18 +488,18 @@ Flightworks Thermal is a governed AI inspection application for **post-hail roof
 
 ## Acceptance Criteria
 
-Flightworks Thermal MVP is **ready for DJI Challenge submission** when:
+Flightworks Thermal MVP is **ready for field validation** when:
 
-1. ✅ End-to-end workflow complete (Observe → Export)
-2. ✅ Onboard ML inference running (<100ms)
-3. ✅ Deterministic post-processing verified (100% consistency)
-4. ✅ Approval workflow enforced (no auto-flagging)
-5. ✅ Documentation Pack export works (<30s)
-6. ✅ Session replay verified (100% determinism)
-7. ✅ Demo scenario runs reliably (10 consecutive successes)
-8. ✅ Coverage tracking functional (>85% per zone)
-9. ✅ PDF report professional quality
-10. ✅ Audit log integrity verified (hash chain)
+1. âœ… End-to-end workflow complete (Observe â†’ Export)
+2. âœ… Onboard ML inference running (<100ms)
+3. âœ… Deterministic post-processing verified (100% consistency)
+4. âœ… Approval workflow enforced (no auto-flagging)
+5. âœ… Documentation Pack export works (<30s)
+6. âœ… Session replay verified (100% determinism)
+7. âœ… Demo scenario runs reliably (10 consecutive successes)
+8. âœ… Coverage tracking functional (>85% per zone)
+9. âœ… PDF report professional quality
+10. âœ… Audit log integrity verified (hash chain)
 
 ---
 
@@ -512,7 +511,7 @@ Flightworks Thermal MVP is **ready for DJI Challenge submission** when:
 | [HLD-FlightworksThermal.md](./HLD-FlightworksThermal.md) | ThermalLaw architecture |
 | [HLD-FlightworksCore.md](./HLD-FlightworksCore.md) | FlightLaw foundation |
 | [PRD-FlightworksCore.md](./PRD-FlightworksCore.md) | FlightLaw requirements |
-| [DJI-Challenge-Submission.md](./DJI-Challenge-Submission.md) | Competition submission |
+| [HLD-FlightworksFire.md](./HLD-FlightworksFire.md) | FireLaw jurisdiction (sibling) |
 
 ---
 
@@ -520,7 +519,8 @@ Flightworks Thermal MVP is **ready for DJI Challenge submission** when:
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
-| 1.0 | Feb 2026 | S. Sweeney | Initial ThermalLaw PRD for DJI Challenge |
+| 2.0 | Feb 2026 | S. Sweeney | Strategic update: DJI references removed, platform-agnostic, aligned with five-jurisdiction model |
+| 1.0 | Feb 2026 | S. Sweeney | Initial ThermalLaw PRD (DJI Challenge era) |
 
 ---
 
@@ -528,7 +528,7 @@ Flightworks Thermal MVP is **ready for DJI Challenge submission** when:
 
 - **Owner:** Stephen Sweeney, Flightworks Aerial LLC
 - **Review Cycle:** Weekly during MVP development
-- **Distribution:** Internal, DJI Challenge submission
+- **Distribution:** Internal, open-source project documentation
 
 ---
 

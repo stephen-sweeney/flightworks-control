@@ -14,19 +14,45 @@ FlightLaw (Universal Safety Kernel)
     ├─→ ThermalLaw (Thermal Inspection)
     │   • Post-hail roof assessment
     │   • Governed AI detection
-    │   • DJI Challenge MVP (Feb-Jun 2026)
+    │   • Future jurisdiction (timeline TBD)
     │
     └─→ SurveyLaw (Precision Mapping)
         • RTK precision surveying
         • Engineering-grade accuracy
-        • Future development (Q3 2026+)
+        • Future jurisdiction (timeline TBD)
 ```
 
-**Current Focus:** ThermalLaw MVP for DJI Drone Onboard AI Challenge 2026
-
+**Current Focus:** FlightLaw foundation (Swift) + Edge Relay (Rust) — the two-language deterministic stack
 
 ---
 
+## Strategic Context
+
+### Target Market
+
+Flightworks Control targets **public safety, defense, and critical infrastructure** — sectors affected by the U.S. ban on Chinese-manufactured drones. This excludes DJI platforms and focuses development on U.S.-manufactured alternatives operating the MAVLink protocol.
+
+### Platform Strategy
+
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| **GCS** | Swift/SwiftUI (iPad) | Operator interface, SwiftVector governance, FlightLaw enforcement |
+| **Edge Relay** | Rust | MAVLink proxy, transport-layer audit, frame recording/replay |
+| **Protocol** | MAVLink v2 (UDP) | Open standard, PX4-compatible, vendor-neutral |
+| **Simulation** | PX4 SITL | Development and testing without hardware |
+| **Field Testing** | Skydio X10 | U.S.-manufactured, MAVLink-compatible, public safety market |
+
+### Development Philosophy
+
+**SITL-first:** Develop maximally against PX4 simulation. Rent hardware for field validation only when software is ready. This minimizes capital risk while proving the architecture.
+
+**Two-language determinism:** Swift and Rust are philosophical siblings — both provide compile-time safety, no garbage collection, and deterministic behavior. The boundary between them (UDP + JSONL) is itself auditable, creating a cross-language determinism proof that strengthens the SwiftVector thesis.
+
+### Alignment with Broader Opportunities
+
+This architecture — governed autonomy for safety-critical drone operations using systems languages on the edge — aligns with multiple strategic pathways including DoD SBIR/STTR priorities (trusted autonomy), university research partnerships, and commercial drone services for government customers.
+
+---
 
 ## Product Vision
 
@@ -34,27 +60,32 @@ The Flightworks Suite demonstrates that **governed AI is competitive AI**. By pr
 
 **FlightLaw (Universal Safety Kernel):**
 - Battery reserve enforcement
-- Geofence violation prevention  
+- Geofence violation prevention
 - Pre-flight readiness validation
 - Tamper-evident audit trail
 - Deterministic replay capability
 
-**ThermalLaw (Thermal Inspection Jurisdiction):**
+**Edge Relay (Transport-Layer Governance):**
+- MAVLink protocol parsing and validation
+- Message allowlisting and filtering
+- Transport-layer audit logging (JSONL)
+- Frame recording and deterministic replay
+- Clean boundary between drone protocol and GCS logic
+
+**ThermalLaw (Thermal Inspection Jurisdiction):** *Future*
 - Post-hail roof damage assessment
 - RGB-primary detection (thermal secondary)
 - Governed candidate approval workflow
 - Documentation Pack export
 - Session replay verification
-- **Target:** DJI Drone Onboard AI Challenge 2026
 
-**SurveyLaw (Precision Mapping Jurisdiction):**
+**SurveyLaw (Precision Mapping Jurisdiction):** *Future*
 - RTK precision surveying (2cm accuracy)
 - Grid adherence validation
 - GSD compliance verification
 - Gap detection and overlap analysis
-- **Target:** Civil engineering market (Q3 2026+)
 
-
+---
 
 ## North Star Metrics
 
@@ -67,25 +98,16 @@ The Flightworks Suite demonstrates that **governed AI is competitive AI**. By pr
 | FlightLaw enforcement | 100% violation prevention | Compliance test suite |
 | Law evaluation latency | <5ms (median) | Performance profiling |
 
-### ThermalLaw (DJI Challenge)
+### Edge Relay (Transport Governance)
 
 | Metric | Target | Verification |
 |--------|--------|--------------|
-| End-to-end demo reliability | 100% | Evaluation readiness |
-| Candidate proposal recall | >90% | vs manual review |
-| False positive rate | <15% | Field validation |
-| Operator approval rate | >70% | User acceptance |
-| Export generation success | 100% | Reliability testing |
+| Frame forwarding latency | <1ms (p99) | Benchmark suite |
+| Audit log completeness | 100% of frames logged | Replay comparison |
+| Cross-language determinism | Identical audit trails | Swift ↔ Rust replay test |
+| Zero clippy warnings | 0 | CI pipeline |
 
-### SurveyLaw (Precision Mapping)
-
-| Metric | Target | Verification |
-|--------|--------|--------------|
-| Horizontal accuracy (RTK) | <2cm (95% CEP) | Field testing with ground control |
-| Grid coverage | >95% | Mission completion analysis |
-| GSD compliance | >98% | Altitude verification |
-| Gap detection accuracy | 100% (>1m²) | QC validation |
-
+---
 
 ## What This Prototype Is NOT (Scope Boundaries)
 
@@ -133,12 +155,12 @@ If AI subsystems fail or produce uncertain outputs, the system gracefully degrad
 
 ---
 
-
 ## Development Roadmap
 
-### Phase 0: FlightLaw Foundation (February 2026)
+### Phase 0: FlightLaw Foundation (February–March 2026)
 
-**Focus:** Universal safety kernel  
+**Focus:** Universal safety kernel — the constitutional infrastructure  
+**Language:** Swift  
 **Deliverables:** Core State/Action/Reducer, Laws 3/4/7/8, Audit Trail
 
 | Deliverable | Status | Description |
@@ -160,169 +182,124 @@ If AI subsystems fail or produce uncertain outputs, the system gracefully degrad
 
 ---
 
-### Phase 1: ThermalLaw MVP - Foundation (March 2026)
+### Phase 1: Edge Relay (February–March 2026, parallel with Phase 0)
 
-**Focus:** DJI Challenge end-to-end workflow  
-**Target:** Observation → Capture → Queue → Approval → Export
+**Focus:** Rust MAVLink proxy with transport-layer audit  
+**Language:** Rust  
+**Deliverables:** UDP relay, MAVLink parsing, audit logging, frame recording/replay
 
 | Deliverable | Status | Description |
 |-------------|--------|-------------|
-| Session management | ⏳ | Start/end, metadata tracking |
-| Frame capture | ⏳ | RGB imagery with GPS metadata |
-| Candidate queue UI | ⏳ | Operator review interface |
-| Approve/reject actions | ⏳ | Law 8 enforcement |
-| Export stub (JSON) | ⏳ | Basic data export |
-| Tier 0 baseline | ⏳ | Rule-based candidate finder |
+| UDP echo relay | 🔄 | Baseline forwarder (synchronous) |
+| Async migration (tokio) | 📋 | Production-ready async I/O |
+| MAVLink v2 header decode | 📋 | Message ID extraction, allowlist filtering |
+| JSONL audit logger | 📋 | Transport-layer event log |
+| Frame recorder | 📋 | Binary recording format for replay |
+| Replay engine | 📋 | Deterministic playback with timing |
+| CLI interface (clap) | 📋 | Configuration and operational modes |
+| CI pipeline | 📋 | cargo fmt, clippy, test, build |
 
 **Success Criteria:**
-- Complete inspection session workflow
-- Candidates appear in queue
-- Operator approval enforced
-- JSON export functional
+- Relay forwards MAVLink frames with <1ms added latency
+- Audit log captures 100% of frames
+- Replay produces identical audit trails
+- Zero clippy warnings
+- Integration test: PX4 SITL → Relay → verified output
 
-**DJI Challenge Milestone:** End-to-end skeleton operational
+**Architecture Decision:** The Edge Relay creates a clean, testable boundary between drone protocol (MAVLink/UDP) and GCS logic (Swift). Both sides are compile-time safe (Rust and Swift), and the boundary itself (UDP frames + JSONL logs) is auditable. This proves the "systems languages on the edge" thesis — deterministic guarantees at every layer.
 
 ---
 
-### Phase 2: ThermalLaw MVP - ML Integration (April 2026)
+### Phase 2: Telemetry Integration (April 2026)
 
-**Focus:** Onboard ML inference with deterministic post-processing  
-**Target:** CoreML model, severity banding, roof zone assignment
+**Focus:** Connect FlightLaw (Swift) to Edge Relay (Rust) — live data flow  
+**Languages:** Swift + Rust  
+**Deliverables:** Working telemetry pipeline, SITL end-to-end demo
 
 | Deliverable | Status | Description |
 |-------------|--------|-------------|
-| CoreML model integration | ⏳ | Lightweight MobileNet-based model |
-| Tier 1 ML proposals | ⏳ | Onboard inference <100ms |
-| Deterministic thresholding | ⏳ | Fixed confidence bands |
-| Severity banding logic | ⏳ | Minor/Moderate/Significant classification |
-| Roof zone assignment | ⏳ | Field/Edge/Ridge/Valley/Penetration |
-| Grid deviation tracking | ⏳ | Position tolerance validation |
+| DroneConnectionManager | 📋 | Swift UDP client receiving from relay |
+| Telemetry → FlightAction mapping | 📋 | MAVLink fields → typed SwiftVector actions |
+| FlightState live updates | 📋 | Reducer processes real telemetry |
+| Cross-language determinism proof | 📋 | Same recording → identical audits from both sides |
+| PX4 SITL quickstart script | 📋 | One-command full pipeline launch |
+| Basic operator UI | 📋 | Map + telemetry display + connection status |
 
 **Success Criteria:**
-- ML inference runs <100ms
-- Candidates match deterministic rules
-- Severity bands assigned correctly
-- Bounded workload (max candidates/zone)
-
-**DJI Challenge Milestone:** Onboard AI operational
+- PX4 SITL → Rust Relay → Swift GCS end-to-end operational
+- Telemetry updates at ≥10Hz with <50ms total latency
+- FlightLaw validators (geofence, battery) fire on real telemetry
+- Cross-language replay test passes (Rust audit = Swift audit)
 
 ---
 
-### Phase 3: ThermalLaw MVP - Export & Polish (May 2026)
+### Phase 3: Mission Planning & Safety Validation (May–June 2026)
 
-**Focus:** Documentation Pack generation and UX refinement  
-**Target:** Professional client deliverable
+**Focus:** Waypoint missions with FlightLaw enforcement  
+**Language:** Swift  
+**Deliverables:** Mission planner, geofence validation, state interlocks
 
 | Deliverable | Status | Description |
 |-------------|--------|-------------|
-| PDF report generation | ⏳ | Summary + flagged anomalies + coverage |
-| Image annotation | ⏳ | Bounding boxes, metadata overlays |
-| Coverage map visualization | ⏳ | Roof zone completion tracking |
-| UX polish | ⏳ | Approval flow, notifications, feedback |
-| Operator training materials | ⏳ | Workflow documentation |
+| Waypoint data model | 📋 | Typed mission representation |
+| Mission planning UI | 📋 | Tap-to-set waypoints on map |
+| GeofenceValidator | 📋 | Pure function point-in-polygon |
+| BatteryMonitor integration | 📋 | Reserve enforcement against mission plan |
+| State interlocks | 📋 | Pre-arm validation, mode transition rules |
+| Mission upload (MAVLink) | 📋 | Via Edge Relay to PX4 SITL |
 
 **Success Criteria:**
-- PDF export in <30s
-- Professional report quality
-- Operator workflow smooth
-- Coverage tracking accurate
-
-**DJI Challenge Milestone:** MVP feature-complete
+- Geofence rejection is a pure function (deterministic, tested)
+- Battery reserve prevents mission start if insufficient
+- State interlocks prevent unsafe transitions
+- Mission executes in SITL with FlightLaw enforcement active
 
 ---
 
-### Phase 4: ThermalLaw MVP - Replay & Verification (June 2026)
+### Phase 4: Replay, Verification & Field Readiness (July–August 2026)
 
-**Focus:** Session replay and determinism verification  
-**Target:** DJI Challenge submission readiness
+**Focus:** Full system replay and preparation for hardware testing  
+**Languages:** Swift + Rust  
+**Deliverables:** Session replay, determinism verification, field test plan
 
 | Deliverable | Status | Description |
 |-------------|--------|-------------|
-| Replay engine | ⏳ | Identical outputs from audit log |
-| Integrity verifier | ⏳ | Hash chain validation |
-| Determinism test suite | ⏳ | 100% reproducibility |
-| Demo scenarios | ⏳ | Repeatable evaluation demos |
-| Challenge submission | ⏳ | Documentation package |
+| Full session replay | 📋 | Identical outputs from audit log |
+| Integrity verifier | 📋 | Hash chain validation (both languages) |
+| Determinism test suite | 📋 | 100% reproducibility across 10,000 iterations |
+| Demo scenarios | 📋 | Repeatable evaluation demos |
+| Field test plan | 📋 | Skydio X10 test matrix and procedures |
+| Technical documentation | 📋 | Architecture paper, "Systems Languages on the Edge" |
 
 **Success Criteria:**
-- Replay produces identical outputs
-- Audit log integrity verified
+- Replay produces identical outputs from both Swift and Rust audit trails
 - Demo runs reliably (10/10 successes)
-- Documentation complete
+- Documentation complete for external review
+- Ready for hardware field testing
 
-**DJI Challenge Milestone:** Submission ready
-
----
-
-### Phase 5: SurveyLaw Specification (Q3 2026)
-
-**Focus:** Precision mapping jurisdiction architecture  
-**Target:** RTK precision, grid generation, GSD compliance
-
-| Deliverable | Status | Description |
-|-------------|--------|-------------|
-| SurveyLaw HLD + PRD | ✅ | Architecture documented |
-| Grid generation algorithm | 📋 | Deterministic parallel line generation |
-| RTK precision enforcement | 📋 | 2cm horizontal accuracy requirement |
-| GSD compliance validation | 📋 | Altitude + capture verification |
-| Gap detection | 📋 | Coverage hole identification |
-| Overlap analysis | 📋 | Image overlap calculation |
-
-**Success Criteria:**
-- SurveyLaw architecture complete
-- Grid generation deterministic
-- RTK requirements defined
-- Ready for implementation
+**Hardware Gate:** At this point, rent a Skydio X10 for field validation. Contact Pendleton OR testing grounds for controlled environment testing.
 
 ---
 
-### Phase 6: SurveyLaw Implementation (Q4 2026)
+### Future Phases (Timeline TBD)
 
-**Focus:** Engineering-grade surveying capability  
-**Target:** Civil engineering market entry
+**ThermalLaw MVP:**
+- Inspection session management
+- ML-based anomaly detection (CoreML on iPad)
+- Operator approval workflow
+- Documentation Pack export
+- Specifications exist: HLD-FlightworksThermal.md, PRD-FlightworksThermal.md
 
-| Deliverable | Status | Description |
-|-------------|--------|-------------|
-| RTK GPS integration | 📋 | D-RTK 2 Mobile Station |
-| Mission grid UI | 📋 | Interactive grid planning |
-| Real-time GSD monitoring | 📋 | Compliance validation during flight |
-| Post-flight QC report | 📋 | Gap detection, overlap analysis |
-| Survey Package export | 📋 | CAD/GIS compatible deliverables |
+**SurveyLaw Implementation:**
+- RTK GPS integration
+- Deterministic grid generation
+- GSD compliance validation
+- Post-flight QC reporting
+- Specifications exist: HLD-FlightworksSurvey.md, PRD-FlightworksSurvey.md
 
-**Success Criteria:**
-- RTK fix acquisition <60s
-- Position accuracy <2cm (engineering tier)
-- GSD compliance >98%
-- Survey package export functional
-
----
-
-## Future Jurisdictions
-
-### Potential Extensions
-
-**SearchLaw (Search & Rescue):**
-- Grid search pattern generation
-- Coverage optimization
-- Thermal/visible fusion for target detection
-- Multi-platform coordination
-
-**DeliveryLaw (Package Delivery):**
-- Route optimization with safety constraints
-- Precision landing validation
-- Payload state monitoring
-- Delivery confirmation
-
-**InfrastructureLaw (Asset Inspection):**
-- Structure-following flight paths
-- Defect classification
-- Change detection across inspections
-- Regulatory compliance documentation
-
-
-- Real-time anomaly detection during flight
-- Automated inspection report generation
-- Integration with Flightworks Aerial thermal services
+**Future Jurisdictions:**
+- SearchLaw (Search & Rescue)
+- InfrastructureLaw (Asset Inspection)
 
 ---
 
@@ -344,42 +321,38 @@ If AI subsystems fail or produce uncertain outputs, the system gracefully degrad
 ## Technical Architecture
 
 ```
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚                    Operator Interface                        â”‚
-â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚
-â”‚  â”‚  Map View   â”‚  â”‚  Telemetry  â”‚  â”‚  Decision Support   â”‚  â”‚
-â”‚  â”‚             â”‚  â”‚   Display   â”‚  â”‚  (Recommendations)  â”‚  â”‚
-â”‚  â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-          â”‚                â”‚                   â”‚
-          â–¼                â–¼                   â–¼
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚              SwiftVector Decision Layer                      â”‚
-â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”    â”‚
-â”‚  â”‚  Pure Functions â€¢ Deterministic â€¢ Auditable         â”‚    â”‚
-â”‚  â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚    â”‚
-â”‚  â”‚  â”‚   Risk    â”‚ â”‚  Battery  â”‚ â”‚     Geofence      â”‚  â”‚    â”‚
-â”‚  â”‚  â”‚  Evaluatorâ”‚ â”‚  Modeler  â”‚ â”‚     Validator     â”‚  â”‚    â”‚
-â”‚  â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚    â”‚
-â”‚  â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚    â”‚
-â”‚  â”‚  â”‚           Thermal Anomaly Agent               â”‚  â”‚    â”‚
-â”‚  â”‚  â”‚         (Core ML + Deterministic Post)        â”‚  â”‚    â”‚
-â”‚  â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚    â”‚
-â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜    â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-          â”‚                â”‚                   â”‚
-          â–¼                â–¼                   â–¼
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚                   Telemetry Layer                            â”‚
-â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”    â”‚
-â”‚  â”‚  MAVSDK-Swift â€¢ Combine Streams â€¢ Error Recovery    â”‚    â”‚
-â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜    â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-          â”‚
-          â–¼
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚                   PX4 SITL / Hardware                        â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+┌─────────────────────────────────────────────────────────────────┐
+│                    Operator Interface (iPad)                     │
+│  ┌──────────────┐  ┌──────────────┐  ┌─────────────────────┐   │
+│  │  Map View    │  │  Telemetry   │  │  Decision Support   │   │
+│  │              │  │   Display    │  │  (Recommendations)  │   │
+│  └──────┬───────┘  └──────┬───────┘  └─────────┬───────────┘   │
+│─────────┼──────────────────┼───────────────────┼────────────────│
+│         │    SwiftVector Governance Layer (Swift)                │
+│  ┌──────┴──────────────────┴───────────────────┴────────────┐   │
+│  │  FlightLaw: State → Action → Reducer → New State         │   │
+│  │  Laws 3/4/7/8 │ SHA256 Audit │ Deterministic Replay      │   │
+│  └──────────────────────────┬───────────────────────────────┘   │
+│                             │ UDP (typed telemetry actions)      │
+└─────────────────────────────┼───────────────────────────────────┘
+                              │
+                   ┌──────────┴──────────┐
+                   │  LANGUAGE BOUNDARY   │
+                   │  (UDP + JSONL Audit) │
+                   └──────────┬──────────┘
+                              │
+┌─────────────────────────────┼───────────────────────────────────┐
+│          Edge Relay (Rust)  │                                    │
+│  ┌──────────────────────────┴───────────────────────────────┐   │
+│  │  MAVLink v2 Parse │ Allowlist │ JSONL Audit │ Recording  │   │
+│  └──────────────────────────┬───────────────────────────────┘   │
+│                             │ UDP (raw MAVLink)                  │
+└─────────────────────────────┼───────────────────────────────────┘
+                              │
+                    ┌─────────┴─────────┐
+                    │  PX4 SITL / UAS   │
+                    │  (Skydio X10)     │
+                    └───────────────────┘
 ```
 
 ### Key Architectural Decisions
@@ -389,9 +362,10 @@ If AI subsystems fail or produce uncertain outputs, the system gracefully degrad
 | Local-first processing | No cloud dependency for critical decisions | Determinism, latency |
 | Pure function decision logic | Reproducible outputs, testable | Core SwiftVector pattern |
 | Explicit state machines | No hidden state, auditable transitions | Transparency |
-| Combine-based telemetry | Swift-native reactive streams | Swift ecosystem |
+| Rust Edge Relay | Compile-time safe transport layer, zero-copy MAVLink parsing | Systems languages on the edge |
+| Two-language audit trail | Cross-language determinism proof | Strengthens certification thesis |
 | Separation of calculation and presentation | Decision logic testable independent of UI | Modularity |
-| Core ML for thermal processing | On-device inference, no network dependency | Edge AI manifesto |
+| SITL-first development | Maximize progress without hardware capital | Risk mitigation |
 
 ---
 
@@ -399,23 +373,25 @@ If AI subsystems fail or produce uncertain outputs, the system gracefully degrad
 
 | Risk Factor | Impact | Mitigation Strategy |
 |-------------|--------|---------------------|
-| MAVSDK-Swift Instability | **High** | Robust error handling; exponential backoff retry |
+| MAVLink integration complexity | **High** | Edge Relay isolates protocol handling; PX4 SITL for testing |
 | Real-time Map Latency | **Medium** | Minimal annotations; throttled Main Thread updates |
 | Simulator Fidelity | **Low** | Focus on core MAVLink functionality |
 | Decision Support Trust | **Medium** | Clear confidence indicators; explanation panels |
-| Determinism Verification | **Medium** | Property-based testing; replay verification |
-| Thermal ML Accuracy | **Medium** | Conservative thresholds; operator confirmation required |
+| Determinism Verification | **Medium** | Property-based testing; cross-language replay verification |
+| Rust learning curve | **Medium** | Scoped to well-defined relay; build genuine understanding |
+| Drone Command acquisition | **Medium** | Architecture remains valuable regardless; open-source status TBD |
+| Hardware access | **Low** | SITL-first; rent Skydio X10 for field testing when ready |
 
 ---
 
-## Deployment Strategy (Hypothetical GTM)
+## Deployment Strategy
 
 | Phase | Audience | Features | Validation Focus |
 |-------|----------|----------|------------------|
-| **Alpha** | Technical UAV Developers | Phase 1 | Data stream stability |
-| **Beta** | Public Safety Operators | Phase 1-2 | MTTSA validation |
-| **Beta 2** | Technical Authority | Phase 3-4 | Audit trail completeness |
-| **Launch** | OEM partners / Enterprise | Phase 1-5 | Full SwiftVector integration |
+| **Alpha** | Technical UAV Developers | Phase 0-2 (FlightLaw + Relay + Telemetry) | Data stream stability, determinism proof |
+| **Beta** | Public Safety Operators | Phase 3 (Mission Planning) | MTTSA validation, FlightLaw enforcement |
+| **Field** | Technical Authority | Phase 4 (Replay + Verification) | Audit trail completeness, replay accuracy |
+| **Production** | Enterprise / Government | Future Jurisdictions | Full SwiftVector integration, certification readiness |
 
 ---
 
@@ -435,39 +411,20 @@ This section documents insights discovered through applying SwiftVector patterns
 
 5. **ML Output Normalization:** Probabilistic ML outputs require deterministic post-processing to produce consistent typed actions.
 
+6. **Cross-Language Determinism:** When two compile-time-safe languages share an auditable boundary (UDP + JSONL), determinism can be proven across the full stack. The boundary protocol becomes a contract both sides can independently verify.
+
 ### Applicability to Other Domains
 
-These patterns extend to other safety-critical Swift applications:
+These patterns extend to other safety-critical systems applications:
 - Medical device monitoring
 - Industrial control systems
 - Autonomous vehicle subsystems
 - Financial trading systems
-
----
-
-## Version History
-
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0 | â€” | Initial product roadmap |
-| 2.0 | â€” | Added deployment strategy, risk assessment |
-| 3.0 | â€” | SwiftVector integration, Phase 5, architectural principles |
-| 4.0 | January 2026 | Unified engineering/product roadmap; thermal inspection extension; updated timelines |
+- Defense and public safety autonomy
 
 ---
 
 ## Related Documentation
-
-- [ARCHITECTURE.md](ARCHITECTURE.md) â€” Detailed system design
-- [SWIFTVECTOR.md](SWIFTVECTOR.md) â€” SwiftVector principles
-- [DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.md) â€” AI-assisted development workflow
-- [TESTING_STRATEGY.md](docs/TESTING_STRATEGY.md) â€” Verification approach
-- [THERMAL_INSPECTION_EXTENSION.md](docs/THERMAL_INSPECTION_EXTENSION.md) â€” Thermal anomaly detection spec
-- [CONTRIBUTING.md](CONTRIBUTING.md) â€” Contribution guidelines
-
----
-
-## Suite Documentation
 
 ### Architecture & Requirements
 
@@ -475,15 +432,15 @@ These patterns extend to other safety-critical Swift applications:
 |----------|---------|
 | [Flightworks-Suite-Overview.md](docs/Flightworks-Suite-Overview.md) | Master suite architecture |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | SwiftVector implementation patterns |
+| [SwiftVector-Codex.md](SwiftVector-Codex.md) | Constitutional framework |
 | **FlightLaw (Core)** | |
 | [HLD-FlightworksCore.md](docs/HLD-FlightworksCore.md) | Universal safety kernel architecture |
 | [PRD-FlightworksCore.md](docs/PRD-FlightworksCore.md) | FlightLaw requirements |
-| **ThermalLaw (Inspection)** | |
-| [HLD-FlightworksThermal.md](docs/HLD-FlightworksThermal.md) | Thermal inspection architecture |
+| **ThermalLaw (Inspection)** — *Future* | |
+| [HLD-FlightworksThermal.md](docs/HLD-FlightworksThermal.md) | ThermalLaw architecture |
 | [PRD-FlightworksThermal.md](docs/PRD-FlightworksThermal.md) | ThermalLaw requirements |
-| [DJI-Challenge-Submission.md](DJI_Challenge_Submission.md) | Competition submission (v0.3) |
-| **SurveyLaw (Mapping)** | |
-| [HLD-FlightworksSurvey.md](docs/HLD-FlightworksSurvey.md) | Precision mapping architecture |
+| **SurveyLaw (Mapping)** — *Future* | |
+| [HLD-FlightworksSurvey.md](docs/HLD-FlightworksSurvey.md) | SurveyLaw architecture |
 | [PRD-FlightworksSurvey.md](docs/PRD-FlightworksSurvey.md) | SurveyLaw requirements |
 
 ### Development & Testing
@@ -492,7 +449,35 @@ These patterns extend to other safety-critical Swift applications:
 |----------|---------|
 | [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) | AI-assisted development workflow |
 | [TESTING_STRATEGY.md](TESTING_STRATEGY.md) | Verification approach |
-| [SwiftVector-Codex.md](SwiftVector-Codex.md) | Constitutional framework |
+| [RUST_LEARNING_PLAN.md](RUST_LEARNING_PLAN.md) | Edge Relay Rust development guide |
+
+### Foundation Papers
+
+| Document | Purpose |
+|----------|---------|
+| [SwiftVector Codex](SwiftVector-Codex.md) | Constitutional framework for governed autonomy |
+| [Swift at the Edge](Swift-at-the-Edge.md) | Manifesto for on-device AI with systems languages |
+| [The Agency Paradox](Agency-Paradox.md) | Framework for human command over AI systems |
+| [Certify the Boundary](certify-the-boundary.md) | Why deterministic boundaries enable certification |
+
+### Archived
+
+| Document | Notes |
+|----------|-------|
+| DJI_Challenge_Submission_updated.md | Archived Feb 2026. DJI platforms excluded from target market. Content may be repurposed for ThermalLaw development. |
+| DOCUMENT_CONSOLIDATION_STRATEGY.md | Superseded by this roadmap restructure. Useful recommendations absorbed. |
+
+---
+
+## Version History
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 1.0 | — | Initial product roadmap |
+| 2.0 | — | Added deployment strategy, risk assessment |
+| 3.0 | — | SwiftVector integration, Phase 5, architectural principles |
+| 4.0 | January 2026 | Unified engineering/product roadmap; thermal inspection extension; updated timelines |
+| 5.0 | February 2026 | **Strategic pivot:** DJI Challenge removed; Rust Edge Relay added; PX4/MAVLink primary platform; SITL-first development; jurisdiction phases restructured |
 
 ---
 
@@ -501,9 +486,12 @@ These patterns extend to other safety-critical Swift applications:
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | Initial | Original Flightworks Control monolithic roadmap |
-| 2.0 | Feb 2026 | **Jurisdiction-based architecture restructuring** |
-|  |  | • Split into FlightLaw + ThermalLaw + SurveyLaw |
-|  |  | • DJI Challenge focus (ThermalLaw MVP Phases 1-4) |
-|  |  | • SurveyLaw specification and implementation phases |
-|  |  | • Updated to reflect completed HLD/PRD documentation |
-
+| 2.0 | Feb 2026 | Jurisdiction-based architecture restructuring |
+| 3.0 | Feb 2026 | **Strategic realignment** |
+| | | • DJI Challenge and DJI platforms removed (Chinese drone ban) |
+| | | • Rust Edge Relay added as parallel development track |
+| | | • PX4/MAVLink established as primary protocol |
+| | | • Skydio X10 identified as field testing platform |
+| | | • SITL-first development strategy adopted |
+| | | • ThermalLaw and SurveyLaw deferred to future phases |
+| | | • Phase structure reorganized: FlightLaw → Edge Relay → Integration → Mission Planning → Verification |

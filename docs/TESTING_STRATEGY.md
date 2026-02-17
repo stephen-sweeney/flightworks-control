@@ -1,22 +1,23 @@
-# Flightworks Control: Testing Strategy
+# Flightworks Suite: Testing Strategy
 
 ## Verification for Safety-Critical Deterministic Systems
 
-**Version:** 1.0  
-**Date:** January 2026  
-**Project:** Flightworks Control GCS  
-**Methodology:** SwiftVector + Property-Based Testing
+**Version:** 2.0  
+**Date:** February 2026  
+**Project:** Flightworks Suite (Jurisdiction-Based Architecture)  
+**Methodology:** SwiftVector + Property-Based Testing + Jurisdiction Testing
 
 ---
 
 ## Overview
 
-Testing in Flightworks Control serves a dual purpose:
+Testing in the Flightworks Suite serves three purposes:
 
 1. **Functional Correctness** — Does the system behave as specified?
 2. **Determinism Verification** — Given identical inputs, does the system produce identical outputs?
+3. **Jurisdiction Integrity** — Does each jurisdiction correctly inherit and extend FlightLaw guarantees?
 
-For safety-critical systems, the second property is non-negotiable. This document outlines the testing strategy that ensures both properties hold across all components.
+For safety-critical systems, properties 2 and 3 are non-negotiable. This document outlines the testing strategy that ensures all three properties hold across FlightLaw and all jurisdictions.
 
 ---
 
@@ -31,29 +32,42 @@ Every component that processes state or produces decisions must be verifiable th
 - **Pure functions** can be tested with simple input/output assertions
 - **State machines** can be tested with sequence replay
 - **Agents** can be tested with recorded state snapshots
-- **The entire system** can be tested with flight session replay
+- **Jurisdictions** can be tested with compliance suites
+- **The entire system** can be tested with session replay
 
-### Testing Pyramid
+### Jurisdiction Testing Principle
+
+> If FlightLaw guarantees hold, they must hold in every jurisdiction—no exceptions.
+
+Each jurisdiction must:
+- **Inherit** all FlightLaw safety guarantees (Laws 3, 4, 7, 8)
+- **Extend** with domain-specific governance (without conflicts)
+- **Verify** compliance through jurisdiction-specific test suites
+
+---
+
+## Testing Pyramid
 
 ```
                     ┌───────────────┐
-                    │   E2E Tests   │  ← Flight replay, SITL integration
-                    │   (Few, Slow) │
+                    │   E2E Tests   │  ← Session replay (ThermalLaw, SurveyLaw)
+                    │   (Few, Slow) │     Determinism verification
                     └───────┬───────┘
                             │
                 ┌───────────┴───────────┐
-                │   Integration Tests   │  ← Control loop, multi-component
-                │      (Some, Medium)   │
-                └───────────┬───────────┘
+                │   Integration Tests   │  ← Jurisdiction composition
+                │      (Some, Medium)   │     FlightLaw + ThermalLaw
+                └───────────┬───────────┘     Multi-component workflows
                             │
         ┌───────────────────┴───────────────────┐
-        │            Unit Tests                  │  ← Reducers, validators, agents
-        │         (Many, Fast)                  │
+        │            Unit Tests                  │  ← Reducers, validators
+        │         (Many, Fast)                  │     Agents, classifiers
         └───────────────────┬───────────────────┘
                             │
     ┌───────────────────────┴───────────────────────┐
-    │           Property-Based Tests                │  ← Determinism, invariants
-    │              (Foundational)                   │
+    │           Property-Based Tests                │  ← Determinism
+    │              (Foundational)                   │     Invariants
+    │                                               │     Jurisdiction compliance
     └───────────────────────────────────────────────┘
 ```
 
@@ -65,24 +79,24 @@ Every component that processes state or produces decisions must be verifiable th
 
 Property-based tests verify that fundamental properties hold across a wide range of inputs. These are the foundation of SwiftVector's determinism guarantee.
 
-#### Reducer Determinism Tests
+#### FlightLaw Reducer Determinism Tests
 
 ```swift
 import XCTest
 
-final class ReducerDeterminismTests: XCTestCase {
+final class FlightLawDeterminismTests: XCTestCase {
     
     /// Property: Same state + same action = same result (always)
     func testFlightReducerDeterminism() {
         // Generate random but valid state/action pairs
-        let testCases = generateRandomFlightStateActionPairs(count: 1000)
+        let testCases = generateRandomFlightStateActionPairs(count: 10_000)
         
         for (state, action) in testCases {
             let result1 = FlightReducer.reduce(state: state, action: action)
             let result2 = FlightReducer.reduce(state: state, action: action)
             
             XCTAssertEqual(result1, result2, 
-                "Reducer produced different results for identical inputs: \(state), \(action)")
+                "FlightLaw reducer produced different results: \(state), \(action)")
         }
     }
     
@@ -98,7 +112,7 @@ final class ReducerDeterminismTests: XCTestCase {
         
         // Original state must be unchanged (immutability)
         XCTAssertEqual(initialState, FlightState.mock(),
-            "Reducer modified input state (violated purity)")
+            "FlightLaw reducer modified input state (violated purity)")
     }
     
     /// Property: Reducer handles all action types (totality)
@@ -108,591 +122,401 @@ final class ReducerDeterminismTests: XCTestCase {
         // Every action case must be handled without crashing
         for action in FlightAction.allCases {
             let result = FlightReducer.reduce(state: state, action: action)
-            XCTAssertNotNil(result, "Reducer failed to handle action: \(action)")
+            XCTAssertNotNil(result, "FlightLaw reducer failed to handle: \(action)")
         }
     }
 }
 ```
 
-#### State Invariant Tests
+#### ThermalLaw Reducer Determinism Tests
 
 ```swift
-final class StateInvariantTests: XCTestCase {
+final class ThermalLawDeterminismTests: XCTestCase {
     
-    /// Invariant: Cannot be armed without GPS 3D fix
-    func testArmingRequiresGPSFix() {
-        let stateWithoutGPS = FlightState.mock(gpsInfo: .noFix)
-        let result = FlightReducer.reduce(state: stateWithoutGPS, action: .arm)
+    /// Property: Severity banding is deterministic
+    func testSeverityBandingDeterminism() {
+        let testCases = generateRandomMLOutputs(count: 10_000)
         
-        XCTAssertEqual(result.armingState, .disarmed,
-            "System allowed arming without GPS fix")
-    }
-    
-    /// Invariant: Cannot takeoff without being armed
-    func testTakeoffRequiresArmed() {
-        let disarmedState = FlightState.mock(armingState: .disarmed)
-        let result = FlightReducer.reduce(state: disarmedState, action: .takeoff(altitude: 10))
-        
-        XCTAssertEqual(result.flightMode, disarmedState.flightMode,
-            "System allowed takeoff while disarmed")
-    }
-    
-    /// Invariant: Battery level monotonically decreases (during flight)
-    func testBatteryMonotonicDecrease() {
-        var state = FlightState.mock(
-            armingState: .armed,
-            flightMode: .flying,
-            battery: BatteryState(percentage: 80, voltage: 14.8)
-        )
-        
-        // Simulate telemetry updates during flight
-        let telemetryUpdates = generateFlightTelemetrySequence(count: 100)
-        
-        var previousBattery = state.battery!.percentage
-        for telemetry in telemetryUpdates {
-            state = FlightReducer.reduce(state: state, action: .updateTelemetry(telemetry))
-            
-            if let currentBattery = state.battery?.percentage {
-                XCTAssertLessThanOrEqual(currentBattery, previousBattery,
-                    "Battery increased during flight (invariant violation)")
-                previousBattery = currentBattery
-            }
-        }
-    }
-}
-```
-
-### 2. Unit Tests (Component Correctness)
-
-Unit tests verify that individual components behave correctly for specific inputs.
-
-#### Reducer Unit Tests
-
-```swift
-final class FlightReducerTests: XCTestCase {
-    
-    // MARK: - Connection Actions
-    
-    func testConnectionStatusChanged_Connected() {
-        let state = FlightState.mock(connectionStatus: .disconnected)
-        let result = FlightReducer.reduce(
-            state: state, 
-            action: .connectionStatusChanged(.connected)
-        )
-        
-        XCTAssertEqual(result.connectionStatus, .connected)
-    }
-    
-    func testConnectionStatusChanged_Disconnected_ResetsState() {
-        let state = FlightState.mock(
-            connectionStatus: .connected,
-            armingState: .armed,
-            telemetry: .mock()
-        )
-        let result = FlightReducer.reduce(
-            state: state,
-            action: .connectionStatusChanged(.disconnected)
-        )
-        
-        XCTAssertEqual(result.connectionStatus, .disconnected)
-        XCTAssertEqual(result.armingState, .disarmed)
-        XCTAssertNil(result.telemetry)
-    }
-    
-    // MARK: - Arming Actions
-    
-    func testArm_ValidPreconditions_Arms() {
-        let state = FlightState.mock(
-            connectionStatus: .connected,
-            armingState: .disarmed,
-            gpsInfo: .fix3D
-        )
-        let result = FlightReducer.reduce(state: state, action: .arm)
-        
-        XCTAssertEqual(result.armingState, .armed)
-    }
-    
-    func testArm_NoConnection_RemainsDisarmed() {
-        let state = FlightState.mock(
-            connectionStatus: .disconnected,
-            armingState: .disarmed,
-            gpsInfo: .fix3D
-        )
-        let result = FlightReducer.reduce(state: state, action: .arm)
-        
-        XCTAssertEqual(result.armingState, .disarmed)
-    }
-    
-    // MARK: - Flight Mode Actions
-    
-    func testTakeoff_Armed_TransitionsToTakingOff() {
-        let state = FlightState.mock(
-            armingState: .armed,
-            flightMode: .idle
-        )
-        let result = FlightReducer.reduce(state: state, action: .takeoff(altitude: 10))
-        
-        XCTAssertEqual(result.flightMode, .takingOff)
-        XCTAssertEqual(result.targetAltitude, 10)
-    }
-}
-```
-
-#### Validator Unit Tests
-
-```swift
-final class GeofenceValidatorTests: XCTestCase {
-    
-    let squareGeofence = Geofence(
-        vertices: [
-            Coordinate(lat: 0, lon: 0),
-            Coordinate(lat: 0, lon: 10),
-            Coordinate(lat: 10, lon: 10),
-            Coordinate(lat: 10, lon: 0)
-        ],
-        minAltitude: 0,
-        maxAltitude: 100
-    )
-    
-    // MARK: - Horizontal Boundary Tests
-    
-    func testPointInsideGeofence_ReturnsValid() {
-        let position = Position(lat: 5, lon: 5, altitude: 50)
-        let result = GeofenceValidator.validate(position: position, against: squareGeofence)
-        
-        XCTAssertEqual(result, .valid)
-    }
-    
-    func testPointOutsideGeofence_ReturnsViolation() {
-        let position = Position(lat: 15, lon: 15, altitude: 50)
-        let result = GeofenceValidator.validate(position: position, against: squareGeofence)
-        
-        if case .violation(let reason) = result {
-            XCTAssertTrue(reason.contains("outside"))
-        } else {
-            XCTFail("Expected violation for point outside geofence")
-        }
-    }
-    
-    func testPointOnVertex_ReturnsValid() {
-        let position = Position(lat: 0, lon: 0, altitude: 50)
-        let result = GeofenceValidator.validate(position: position, against: squareGeofence)
-        
-        XCTAssertEqual(result, .valid, "Point on vertex should be considered inside")
-    }
-    
-    func testPointOnEdge_ReturnsValid() {
-        let position = Position(lat: 0, lon: 5, altitude: 50)
-        let result = GeofenceValidator.validate(position: position, against: squareGeofence)
-        
-        XCTAssertEqual(result, .valid, "Point on edge should be considered inside")
-    }
-    
-    // MARK: - Altitude Boundary Tests
-    
-    func testAltitudeBelowMinimum_ReturnsViolation() {
-        let position = Position(lat: 5, lon: 5, altitude: -10)
-        let result = GeofenceValidator.validate(position: position, against: squareGeofence)
-        
-        if case .violation(let reason) = result {
-            XCTAssertTrue(reason.contains("altitude"))
-        } else {
-            XCTFail("Expected violation for altitude below minimum")
-        }
-    }
-    
-    func testAltitudeAboveMaximum_ReturnsViolation() {
-        let position = Position(lat: 5, lon: 5, altitude: 150)
-        let result = GeofenceValidator.validate(position: position, against: squareGeofence)
-        
-        if case .violation(let reason) = result {
-            XCTAssertTrue(reason.contains("altitude"))
-        } else {
-            XCTFail("Expected violation for altitude above maximum")
-        }
-    }
-    
-    // MARK: - Determinism Tests
-    
-    func testValidatorDeterminism() {
-        let positions = generateRandomPositions(count: 1000)
-        
-        for position in positions {
-            let result1 = GeofenceValidator.validate(position: position, against: squareGeofence)
-            let result2 = GeofenceValidator.validate(position: position, against: squareGeofence)
+        for mlOutput in testCases {
+            let result1 = ThermalClassifier.classify(mlOutput)
+            let result2 = ThermalClassifier.classify(mlOutput)
             
             XCTAssertEqual(result1, result2,
-                "Geofence validator produced different results for same input")
+                "Severity banding produced different results for: \(mlOutput)")
         }
+    }
+    
+    /// Property: Candidate classification is deterministic
+    func testCandidateClassificationDeterminism() {
+        let testCases = generateRandomCandidates(count: 10_000)
+        
+        for candidate in testCases {
+            let state = ThermalState.mock(captureState: .active)
+            let action = ThermalAction.proposeCandidate(candidate)
+            
+            let result1 = ThermalReducer.reduce(state: state, action: action)
+            let result2 = ThermalReducer.reduce(state: state, action: action)
+            
+            XCTAssertEqual(result1, result2,
+                "Candidate classification non-deterministic: \(candidate)")
+        }
+    }
+    
+    /// Property: Bounded workload enforcement
+    func testBoundedWorkloadEnforcement() {
+        var state = ThermalState.mock()
+        
+        // Try to add more than max candidates per zone
+        for i in 0..<100 {
+            let candidate = RoofCandidate.mock(roofZone: .field)
+            state = ThermalReducer.reduce(
+                state: state,
+                action: .proposeCandidate(candidate)
+            )
+        }
+        
+        // Should never exceed max candidates per zone
+        let fieldCandidates = state.proposedCandidates.filter { 
+            $0.roofZone == .field 
+        }
+        
+        XCTAssertLessThanOrEqual(fieldCandidates.count, 50,
+            "Bounded workload violated: \(fieldCandidates.count) candidates")
     }
 }
 ```
 
-#### Safety Interlock Tests
+---
+
+### 2. FlightLaw Compliance Tests (Law Enforcement)
+
+These tests verify that FlightLaw (Laws 3, 4, 7, 8) is correctly enforced.
+
+#### Law 3: Observation (Telemetry & Readiness)
 
 ```swift
-final class StateInterlockTests: XCTestCase {
+final class Law3ObservationTests: XCTestCase {
     
-    // MARK: - Arming Interlocks
-    
-    func testCanArm_AllPreconditionsMet_ReturnsTrue() {
+    func testPreFlightValidationRequired() {
         let state = FlightState.mock(
-            connectionStatus: .connected,
-            armingState: .disarmed,
-            gpsInfo: .fix3D,
-            battery: BatteryState(percentage: 50, voltage: 14.8)
-        )
-        
-        let result = StateInterlocks.canArm(state: state)
-        
-        XCTAssertTrue(result.allowed)
-        XCTAssertTrue(result.blockers.isEmpty)
-    }
-    
-    func testCanArm_NoGPS_ReturnsFalseWithBlocker() {
-        let state = FlightState.mock(
-            connectionStatus: .connected,
-            armingState: .disarmed,
-            gpsInfo: .noFix
-        )
-        
-        let result = StateInterlocks.canArm(state: state)
-        
-        XCTAssertFalse(result.allowed)
-        XCTAssertTrue(result.blockers.contains(.noGPSFix))
-    }
-    
-    func testCanArm_LowBattery_ReturnsFalseWithBlocker() {
-        let state = FlightState.mock(
-            connectionStatus: .connected,
-            armingState: .disarmed,
-            gpsInfo: .fix3D,
-            battery: BatteryState(percentage: 10, voltage: 13.2)
-        )
-        
-        let result = StateInterlocks.canArm(state: state)
-        
-        XCTAssertFalse(result.allowed)
-        XCTAssertTrue(result.blockers.contains(.lowBattery))
-    }
-    
-    func testCanArm_GeofenceViolation_ReturnsFalseWithBlocker() {
-        let state = FlightState.mock(
-            connectionStatus: .connected,
-            armingState: .disarmed,
-            gpsInfo: .fix3D,
-            position: Position(lat: 100, lon: 100, altitude: 0), // Outside geofence
-            activeGeofence: Geofence.mock()
-        )
-        
-        let result = StateInterlocks.canArm(state: state)
-        
-        XCTAssertFalse(result.allowed)
-        XCTAssertTrue(result.blockers.contains(.geofenceViolation))
-    }
-    
-    func testCanArm_MultipleBlockers_ReturnsAllBlockers() {
-        let state = FlightState.mock(
-            connectionStatus: .disconnected,
-            armingState: .disarmed,
             gpsInfo: .noFix,
-            battery: BatteryState(percentage: 5, voltage: 12.0)
+            battery: BatteryState(percentage: 100, voltage: 16.8)
         )
         
-        let result = StateInterlocks.canArm(state: state)
+        let result = FlightReducer.reduce(state: state, action: .arm)
         
-        XCTAssertFalse(result.allowed)
-        XCTAssertTrue(result.blockers.contains(.noConnection))
-        XCTAssertTrue(result.blockers.contains(.noGPSFix))
-        XCTAssertTrue(result.blockers.contains(.lowBattery))
+        XCTAssertEqual(result.armingState, .disarmed,
+            "Law 3 violated: armed without GPS fix")
     }
     
-    // MARK: - 100% Coverage Requirement
-    
-    func testAllInterlockBlockersHaveTests() {
-        // Ensure every ArmingBlocker case has at least one test
-        let testedBlockers: Set<ArmingBlocker> = [
-            .noConnection,
-            .noGPSFix,
-            .lowBattery,
-            .geofenceViolation,
-            .alreadyArmed,
-            .systemError
-        ]
-        
-        let allBlockers = Set(ArmingBlocker.allCases)
-        let untestedBlockers = allBlockers.subtracting(testedBlockers)
-        
-        XCTAssertTrue(untestedBlockers.isEmpty,
-            "Missing tests for blockers: \(untestedBlockers)")
-    }
-}
-```
-
-### 3. Integration Tests (Control Loop)
-
-Integration tests verify that components work together correctly.
-
-```swift
-final class ControlLoopTests: XCTestCase {
-    
-    var orchestrator: FlightOrchestrator!
-    
-    override func setUp() {
-        orchestrator = FlightOrchestrator()
-    }
-    
-    // MARK: - Action Dispatch Tests
-    
-    func testDispatch_UpdatesStateAndLogsAction() {
-        let initialState = orchestrator.state
-        
-        orchestrator.dispatch(.connectionStatusChanged(.connected))
-        
-        XCTAssertNotEqual(orchestrator.state, initialState)
-        XCTAssertEqual(orchestrator.actionLog.count, 1)
-        XCTAssertEqual(orchestrator.actionLog.first?.action, .connectionStatusChanged(.connected))
-    }
-    
-    func testDispatch_PreservesActionOrder() {
-        let actions: [FlightAction] = [
-            .connectionStatusChanged(.connected),
-            .arm,
-            .takeoff(altitude: 10),
-            .land
-        ]
-        
-        for action in actions {
-            orchestrator.dispatch(action)
-        }
-        
-        let loggedActions = orchestrator.actionLog.map { $0.action }
-        XCTAssertEqual(loggedActions, actions)
-    }
-    
-    // MARK: - State Machine Integration
-    
-    func testFullFlightSequence() {
-        // Connect
-        orchestrator.dispatch(.connectionStatusChanged(.connected))
-        XCTAssertEqual(orchestrator.state.connectionStatus, .connected)
-        
-        // Receive GPS
-        orchestrator.dispatch(.updateTelemetry(.mockWithGPS()))
-        XCTAssertEqual(orchestrator.state.gpsInfo, .fix3D)
-        
-        // Arm
-        orchestrator.dispatch(.arm)
-        XCTAssertEqual(orchestrator.state.armingState, .armed)
-        
-        // Takeoff
-        orchestrator.dispatch(.takeoff(altitude: 10))
-        XCTAssertEqual(orchestrator.state.flightMode, .takingOff)
-        
-        // In flight
-        orchestrator.dispatch(.updateTelemetry(.mockFlying(altitude: 10)))
-        XCTAssertEqual(orchestrator.state.flightMode, .flying)
-        
-        // Land
-        orchestrator.dispatch(.land)
-        XCTAssertEqual(orchestrator.state.flightMode, .landing)
-        
-        // Landed
-        orchestrator.dispatch(.updateTelemetry(.mockLanded()))
-        XCTAssertEqual(orchestrator.state.flightMode, .landed)
-        
-        // Disarm
-        orchestrator.dispatch(.disarm)
-        XCTAssertEqual(orchestrator.state.armingState, .disarmed)
-    }
-    
-    // MARK: - Replay Verification
-    
-    func testReplayProducesSameState() {
-        // Execute a sequence
-        let actions: [FlightAction] = [
-            .connectionStatusChanged(.connected),
-            .updateTelemetry(.mockWithGPS()),
-            .arm,
-            .takeoff(altitude: 10),
-            .updateTelemetry(.mockFlying(altitude: 10))
-        ]
-        
-        for action in actions {
-            orchestrator.dispatch(action)
-        }
-        
-        let finalState = orchestrator.state
-        
-        // Replay the same sequence on a fresh orchestrator
-        let replayOrchestrator = FlightOrchestrator()
-        for action in actions {
-            replayOrchestrator.dispatch(action)
-        }
-        
-        XCTAssertEqual(replayOrchestrator.state, finalState,
-            "Replay produced different state than original execution")
-    }
-}
-```
-
-### 4. Agent Determinism Tests (Phase 5)
-
-```swift
-final class AgentDeterminismTests: XCTestCase {
-    
-    // MARK: - Risk Assessment Agent
-    
-    func testRiskAssessmentAgent_Determinism() async {
-        let agent = RiskAssessmentAgent()
-        let stateSnapshots = generateFlightStateSnapshots(count: 100)
-        
-        for state in stateSnapshots {
-            await agent.observe(state: state)
-            let proposals1 = await agent.propose()
-            
-            // Reset and re-observe same state
-            await agent.observe(state: state)
-            let proposals2 = await agent.propose()
-            
-            XCTAssertEqual(proposals1, proposals2,
-                "Risk agent produced different proposals for same state")
-        }
-    }
-    
-    func testRiskAssessmentAgent_ProposesTypedActions() async {
-        let agent = RiskAssessmentAgent()
-        let riskyState = FlightState.mock(
-            battery: BatteryState(percentage: 15, voltage: 13.5),
-            distanceFromHome: 2000 // meters
-        )
-        
-        await agent.observe(state: riskyState)
-        let proposals = await agent.propose()
-        
-        // Proposals must be typed FlightActions, not strings
-        for proposal in proposals {
-            XCTAssertTrue(proposal is FlightAction,
-                "Agent proposed non-typed action")
-        }
-    }
-    
-    func testRiskAssessmentAgent_IncludesExplanation() async {
-        let agent = RiskAssessmentAgent()
-        let state = FlightState.mock()
-        
-        await agent.observe(state: state)
-        let assessment = await agent.currentAssessment()
-        
-        XCTAssertFalse(assessment.explanation.isEmpty,
-            "Risk assessment missing explanation")
-        XCTAssertNotNil(assessment.confidence,
-            "Risk assessment missing confidence score")
-    }
-    
-    // MARK: - Thermal Anomaly Agent (Phase 5)
-    
-    func testThermalAnomalyAgent_Determinism() async {
-        let agent = ThermalAnomalyAgent()
-        let thermalFrames = loadTestThermalFrames()
-        
-        for frame in thermalFrames {
-            let state = FlightState.mock(thermalFrame: frame)
-            
-            await agent.observe(state: state)
-            let proposals1 = await agent.propose()
-            
-            await agent.observe(state: state)
-            let proposals2 = await agent.propose()
-            
-            XCTAssertEqual(proposals1, proposals2,
-                "Thermal agent produced different proposals for same frame")
-        }
-    }
-    
-    func testThermalAnomalyAgent_DeterministicThresholding() async {
-        let agent = ThermalAnomalyAgent()
-        
-        // Same ML output should always produce same classification
-        let mlOutput = ThermalMLOutput(
-            anomalyProbability: 0.75,
-            boundingBox: CGRect(x: 100, y: 100, width: 50, height: 50),
-            temperature: 85.0
-        )
-        
-        let classification1 = agent.classifyAnomaly(mlOutput)
-        let classification2 = agent.classifyAnomaly(mlOutput)
-        
-        XCTAssertEqual(classification1, classification2,
-            "Thermal classification non-deterministic")
-    }
-    
-    func testThermalAnomalyAgent_ThresholdBoundaryBehavior() {
-        let agent = ThermalAnomalyAgent()
-        
-        // Test exact threshold boundary (0.7 is threshold)
-        let atThreshold = ThermalMLOutput(anomalyProbability: 0.7, boundingBox: .zero, temperature: 80)
-        let justBelow = ThermalMLOutput(anomalyProbability: 0.6999, boundingBox: .zero, temperature: 80)
-        let justAbove = ThermalMLOutput(anomalyProbability: 0.7001, boundingBox: .zero, temperature: 80)
-        
-        // Behavior at boundary must be defined and consistent
-        let atResult = agent.classifyAnomaly(atThreshold)
-        let belowResult = agent.classifyAnomaly(justBelow)
-        let aboveResult = agent.classifyAnomaly(justAbove)
-        
-        // Run 100 times to verify consistency
-        for _ in 0..<100 {
-            XCTAssertEqual(agent.classifyAnomaly(atThreshold), atResult)
-            XCTAssertEqual(agent.classifyAnomaly(justBelow), belowResult)
-            XCTAssertEqual(agent.classifyAnomaly(justAbove), aboveResult)
-        }
-    }
-}
-```
-
-### 5. End-to-End Tests (Flight Replay)
-
-```swift
-final class FlightReplayTests: XCTestCase {
-    
-    func testRecordedFlightReplay_ExactMatch() throws {
-        // Load recorded flight session
-        let recording = try FlightRecording.load(from: "test_flight_001.json")
-        
-        // Replay through orchestrator
+    func testTelemetryLoggingEnforced() {
         let orchestrator = FlightOrchestrator()
-        for entry in recording.entries {
-            orchestrator.dispatch(entry.action)
+        orchestrator.dispatch(.telemetryReceived(TelemetryData.mock()))
+        
+        XCTAssertGreaterThan(orchestrator.auditLog.count, 0,
+            "Law 3 violated: telemetry not logged")
+    }
+}
+```
+
+#### Law 4: Resource (Battery & Thermal Limits)
+
+```swift
+final class Law4ResourceTests: XCTestCase {
+    
+    func testBatteryReserveEnforcement() {
+        let state = FlightState.mock(
+            flightMode: .flying,
+            battery: BatteryState(percentage: 19, voltage: 14.4)
+        )
+        
+        let result = FlightReducer.reduce(state: state, action: .updateBattery(19))
+        
+        XCTAssertEqual(result.flightMode, .returningToLaunch,
+            "Law 4 violated: did not enforce RTL at 20% threshold")
+    }
+    
+    func testThermalLimitMonitoring() {
+        // Manifold 3 thermal limit: 50°C
+        let state = SystemState.mock(cpuTemp: 52.0)
+        
+        let result = SystemReducer.reduce(state: state, action: .thermalUpdate(52.0))
+        
+        XCTAssertEqual(result.systemStatus, .degraded,
+            "Law 4 violated: did not degrade at thermal limit")
+    }
+}
+```
+
+#### Law 7: Spatial (Geofencing & Altitude)
+
+```swift
+final class Law7SpatialTests: XCTestCase {
+    
+    func testGeofenceViolationPrevention() {
+        let geofence = Geofence(center: Position(lat: 39.0, lon: -105.0), radius: 100)
+        let state = FlightState.mock(activeGeofence: geofence)
+        
+        let outsidePosition = Position(lat: 39.1, lon: -105.1)
+        let action = FlightAction.setWaypoint(outsidePosition)
+        
+        let result = FlightReducer.reduce(state: state, action: action)
+        
+        XCTAssertNil(result.nextWaypoint,
+            "Law 7 violated: waypoint outside geofence accepted")
+    }
+    
+    func testAltitudeLimitEnforcement() {
+        let state = FlightState.mock(altitudeLimit: Altitude(agl: 120))
+        let action = FlightAction.takeoff(altitude: 150)
+        
+        let result = FlightReducer.reduce(state: state, action: action)
+        
+        XCTAssertNotEqual(result.targetAltitude, 150,
+            "Law 7 violated: altitude limit exceeded")
+    }
+}
+```
+
+#### Law 8: Authority (Operator Approval)
+
+```swift
+final class Law8AuthorityTests: XCTestCase {
+    
+    func testHighRiskActionsRequireApproval() {
+        let state = AppState.mock()
+        let action = AppAction.flight(.arm)
+        
+        let evaluator = FlightLawEnforcer()
+        let result = evaluator.evaluate(action: action, state: state)
+        
+        switch result {
+        case .requiresApproval(let risk):
+            XCTAssertTrue(risk == .high || risk == .medium,
+                "Law 8 violated: arming should require approval")
+        default:
+            XCTFail("Law 8 violated: arming permitted without approval")
         }
+    }
+    
+    func testThermalLawApprovalWorkflow() {
+        let state = ThermalState.mock(
+            proposedCandidates: [RoofCandidate.mock()]
+        )
         
-        // Final state must match recorded final state
-        XCTAssertEqual(orchestrator.state, recording.finalState,
-            "Replay final state differs from recorded state")
+        // Attempt to flag without approval
+        let result = ThermalReducer.reduce(
+            state: state,
+            action: .flagCandidate(candidateID: "test-1")
+        )
         
-        // Intermediate states must also match
-        let replayOrchestrator = FlightOrchestrator()
-        for (index, entry) in recording.entries.enumerated() {
-            replayOrchestrator.dispatch(entry.action)
+        // Should reject (no approval action)
+        XCTAssertEqual(state.flaggedAnomalies.count, 0,
+            "Law 8 violated: flagged candidate without approval")
+    }
+}
+```
+
+---
+
+### 3. Jurisdiction Inheritance Tests
+
+These tests verify that jurisdictions correctly inherit FlightLaw guarantees.
+
+```swift
+final class JurisdictionInheritanceTests: XCTestCase {
+    
+    /// Test: ThermalLaw inherits Law 3 (Observation)
+    func testThermalLawInheritsObservation() {
+        let state = AppState.mock(
+            flight: FlightState.mock(gpsInfo: .noFix),
+            thermal: ThermalState.mock()
+        )
+        
+        let enforcer = ThermalLawEnforcer()
+        let result = enforcer.evaluate(
+            action: .thermal(.startSession),
+            state: state
+        )
+        
+        XCTAssertEqual(result, .rejected,
+            "ThermalLaw did not inherit Law 3: started without GPS")
+    }
+    
+    /// Test: ThermalLaw inherits Law 4 (Resource)
+    func testThermalLawInheritsBatteryReserve() {
+        let state = AppState.mock(
+            flight: FlightState.mock(battery: BatteryState(percentage: 19)),
+            thermal: ThermalState.mock(sessionActive: true)
+        )
+        
+        let enforcer = ThermalLawEnforcer()
+        let result = enforcer.evaluate(
+            action: .thermal(.captureImage),
+            state: state
+        )
+        
+        XCTAssertEqual(result, .rejected,
+            "ThermalLaw did not inherit Law 4: capture at low battery")
+    }
+    
+    /// Test: ThermalLaw inherits Law 7 (Spatial)
+    func testThermalLawInheritsGeofence() {
+        let geofence = Geofence(center: Position(lat: 39.0, lon: -105.0), radius: 100)
+        let outsidePosition = Position(lat: 39.1, lon: -105.1)
+        
+        let state = AppState.mock(
+            flight: FlightState.mock(activeGeofence: geofence),
+            thermal: ThermalState.mock()
+        )
+        
+        let enforcer = ThermalLawEnforcer()
+        let result = enforcer.evaluate(
+            action: .thermal(.captureImage(metadata: CaptureMetadata(position: outsidePosition))),
+            state: state
+        )
+        
+        XCTAssertEqual(result, .rejected,
+            "ThermalLaw did not inherit Law 7: capture outside geofence")
+    }
+    
+    /// Test: ThermalLaw inherits Law 8 (Authority)
+    func testThermalLawEnforcesApprovalWorkflow() {
+        let state = ThermalState.mock(
+            proposedCandidates: [RoofCandidate.mock(id: "test-1")]
+        )
+        
+        // Attempt to flag without explicit approval
+        let result = ThermalReducer.reduce(
+            state: state,
+            action: .flagCandidate(candidateID: "test-1")
+        )
+        
+        XCTAssertEqual(result.flaggedAnomalies.count, 0,
+            "ThermalLaw did not enforce Law 8: auto-flagging occurred")
+    }
+}
+```
+
+---
+
+### 4. Session Replay Tests
+
+Session replay is the ultimate determinism verification.
+
+#### ThermalLaw Session Replay
+
+```swift
+final class ThermalSessionReplayTests: XCTestCase {
+    
+    func testSessionReplayProducesSameOutputs() {
+        // Record a session
+        let session = recordThermalSession()
+        
+        // Replay session 100 times
+        for iteration in 0..<100 {
+            let replayedSession = replaySession(session.auditLog)
             
-            if let recordedState = recording.stateAtIndex(index) {
-                XCTAssertEqual(replayOrchestrator.state, recordedState,
-                    "State mismatch at index \(index)")
+            // Verify identical outputs
+            XCTAssertEqual(
+                replayedSession.proposedCandidates.count,
+                session.proposedCandidates.count,
+                "Replay iteration \(iteration): different candidate count"
+            )
+            
+            XCTAssertEqual(
+                replayedSession.proposedCandidates.map(\.id),
+                session.proposedCandidates.map(\.id),
+                "Replay iteration \(iteration): different candidate IDs"
+            )
+            
+            XCTAssertEqual(
+                replayedSession.flaggedAnomalies.count,
+                session.flaggedAnomalies.count,
+                "Replay iteration \(iteration): different flagged count"
+            )
+            
+            // Verify hash chain integrity
+            XCTAssertEqual(
+                replayedSession.finalStateHash,
+                session.finalStateHash,
+                "Replay iteration \(iteration): state hash mismatch"
+            )
+        }
+    }
+    
+    func testReplayWithDifferentMLModel() {
+        let session = recordThermalSession(modelVersion: "v1.0")
+        
+        // Replay with different model version should be detected
+        do {
+            let _ = try replaySession(
+                session.auditLog,
+                modelVersion: "v2.0"
+            )
+            XCTFail("Replay should fail with different model version")
+        } catch ReplayError.modelVersionMismatch {
+            // Expected
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+}
+```
+
+---
+
+### 5. Performance Tests
+
+Performance tests ensure real-time requirements are met.
+
+```swift
+final class PerformanceTests: XCTestCase {
+    
+    func testMLInferenceLatency() {
+        let model = ThermalMLModel.load()
+        let frames = generateTestFrames(count: 100)
+        
+        measure {
+            for frame in frames {
+                let _ = model.predict(frame)
             }
         }
+        
+        // Target: <100ms per frame (p95)
+        XCTAssertLessThan(averageInferenceTime, 0.100,
+            "ML inference exceeds 100ms target")
     }
     
-    func testRecordedFlightReplay_CrossVersion() throws {
-        // Load flight recorded with previous version
-        let legacyRecording = try FlightRecording.load(from: "legacy_flight_v1.json")
+    func testCandidateProposalLatency() {
+        let state = ThermalState.mock()
+        let mlOutput = ThermalMLOutput.mock()
         
-        // Current version must produce same results
-        let orchestrator = FlightOrchestrator()
-        for entry in legacyRecording.entries {
-            orchestrator.dispatch(entry.action)
+        measure {
+            let _ = ThermalReducer.reduce(
+                state: state,
+                action: .inferenceCompleted(mlOutput)
+            )
         }
         
-        XCTAssertEqual(orchestrator.state, legacyRecording.finalState,
-            "Cross-version replay produced different results")
+        // Target: <500ms end-to-end
+        XCTAssertLessThan(averageProposalTime, 0.500,
+            "Candidate proposal exceeds 500ms target")
+    }
+    
+    func testExportGenerationTime() {
+        let session = ThermalSession.mock(
+            capturedFrames: 200,
+            flaggedAnomalies: 15
+        )
+        
+        measure {
+            let _ = session.generateDocumentationPack()
+        }
+        
+        // Target: <30s
+        XCTAssertLessThan(averageExportTime, 30.0,
+            "Export generation exceeds 30s target")
     }
 }
 ```
@@ -701,250 +525,94 @@ final class FlightReplayTests: XCTestCase {
 
 ## Test Coverage Requirements
 
-### Minimum Coverage Targets
+### Coverage Targets
 
-| Component | Line Coverage | Branch Coverage | Determinism Tests |
-|-----------|---------------|-----------------|-------------------|
-| Reducers | 90% | 85% | Required |
-| Validators | 95% | 90% | Required |
-| Interlocks | 100% | 100% | Required |
-| Agents | 85% | 80% | Required |
-| Orchestrator | 85% | 80% | Required |
-| UI Components | 70% | 60% | Not required |
-| Telemetry | 80% | 75% | Replay tests |
+| Component | Unit Test | Integration | Property-Based | Target |
+|-----------|-----------|-------------|----------------|--------|
+| **FlightLaw Reducers** | ✅ Required | ✅ Required | ✅ Required | 100% |
+| **FlightLaw Enforcers** | ✅ Required | ✅ Required | ✅ Required | 100% |
+| **ThermalLaw Reducers** | ✅ Required | ✅ Required | ✅ Required | 100% |
+| **ThermalLaw Classifiers** | ✅ Required | - | ✅ Required | 100% |
+| **SurveyLaw Reducers** | ✅ Required | ✅ Required | ✅ Required | 100% |
+| **UI Components** | ✅ Required | - | - | >80% |
+| **Agents** | ✅ Required | ✅ Required | - | >90% |
 
-### Safety-Critical Components (100% Branch Coverage Required)
+### Critical Path Coverage
 
-- `StateInterlocks.swift`
-- `GeofenceValidator.swift`
-- `SafetyValidator.swift`
-- All reducer precondition checks
-
----
-
-## Test Data Management
-
-### Mock Factories
-
-```swift
-// FlightState+Mock.swift
-extension FlightState {
-    static func mock(
-        connectionStatus: ConnectionStatus = .disconnected,
-        armingState: ArmingState = .disarmed,
-        flightMode: FlightMode = .idle,
-        gpsInfo: GPSInfo = .noFix,
-        battery: BatteryState? = nil,
-        position: Position? = nil,
-        thermalFrame: ThermalFrameMetadata? = nil
-    ) -> FlightState {
-        FlightState(
-            connectionStatus: connectionStatus,
-            armingState: armingState,
-            flightMode: flightMode,
-            gpsInfo: gpsInfo,
-            battery: battery,
-            position: position,
-            thermalFrame: thermalFrame,
-            timestamp: Date(timeIntervalSince1970: 0) // Deterministic timestamp
-        )
-    }
-}
-```
-
-### Test Fixtures
-
-```
-FlightworksControlTests/
-├── Fixtures/
-│   ├── FlightRecordings/
-│   │   ├── test_flight_001.json
-│   │   ├── test_flight_emergency_rtl.json
-│   │   └── legacy_flight_v1.json
-│   ├── ThermalFrames/
-│   │   ├── anomaly_detected.json
-│   │   ├── no_anomaly.json
-│   │   └── edge_case_threshold.json
-│   └── Geofences/
-│       ├── simple_square.json
-│       ├── complex_polygon.json
-│       └── overlapping_zones.json
-```
-
-### Deterministic Test Data Generation
-
-```swift
-/// Generates random but deterministic test data using seeded RNG
-struct DeterministicTestData {
-    private var rng: SeededRandomNumberGenerator
-    
-    init(seed: UInt64 = 12345) {
-        rng = SeededRandomNumberGenerator(seed: seed)
-    }
-    
-    mutating func generateFlightState() -> FlightState {
-        FlightState.mock(
-            connectionStatus: Bool.random(using: &rng) ? .connected : .disconnected,
-            armingState: Bool.random(using: &rng) ? .armed : .disarmed,
-            battery: BatteryState(
-                percentage: Double.random(in: 0...100, using: &rng),
-                voltage: Double.random(in: 12...16.8, using: &rng)
-            )
-        )
-    }
-}
-```
+**100% coverage required for:**
+- All reducers (state transitions)
+- All law enforcers (safety validation)
+- All deterministic classifiers (ML post-processing)
+- Session replay logic
+- Audit trail generation
 
 ---
 
-## Continuous Integration
+## CI/CD Integration
 
 ### GitHub Actions Workflow
 
 ```yaml
 name: Test Suite
 
-on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main]
+on: [push, pull_request]
 
 jobs:
   test:
-    runs-on: macos-14
-    
+    runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Select Xcode
-      run: sudo xcode-select -s /Applications/Xcode_15.app
-    
-    - name: Build
-      run: xcodebuild build -scheme FlightworksControl -destination 'platform=macOS'
-    
-    - name: Run Unit Tests
-      run: xcodebuild test -scheme FlightworksControl -destination 'platform=macOS' -only-testing:FlightworksControlTests/Core
-    
-    - name: Run Safety Tests
-      run: xcodebuild test -scheme FlightworksControl -destination 'platform=macOS' -only-testing:FlightworksControlTests/Safety
-    
-    - name: Run Integration Tests
-      run: xcodebuild test -scheme FlightworksControl -destination 'platform=macOS' -only-testing:FlightworksControlTests/Integration
-    
-    - name: Run Determinism Tests
-      run: xcodebuild test -scheme FlightworksControl -destination 'platform=macOS' -testPlan DeterminismTests
-    
-    - name: Generate Coverage Report
-      run: |
-        xcrun llvm-cov export -format="lcov" \
-          .build/debug/FlightworksControlPackageTests.xctest/Contents/MacOS/FlightworksControlPackageTests \
-          -instr-profile .build/debug/codecov/default.profdata > coverage.lcov
-    
-    - name: Check Coverage Thresholds
-      run: |
-        # Fail if safety-critical components below 100%
-        python scripts/check_coverage.py coverage.lcov --min-safety 100 --min-overall 80
-```
-
-### Pre-Commit Hooks
-
-```bash
-#!/bin/bash
-# .git/hooks/pre-commit
-
-echo "Running pre-commit tests..."
-
-# Run fast unit tests
-xcodebuild test -scheme FlightworksControl -destination 'platform=macOS' \
-  -only-testing:FlightworksControlTests/Core/ReducerDeterminismTests \
-  -quiet
-
-if [ $? -ne 0 ]; then
-  echo "❌ Determinism tests failed. Commit aborted."
-  exit 1
-fi
-
-echo "✅ Pre-commit tests passed."
-```
-
----
-
-## Test Execution Guidelines
-
-### Local Development
-
-```bash
-# Run all tests
-xcodebuild test -scheme FlightworksControl -destination 'platform=macOS'
-
-# Run specific test class
-xcodebuild test -scheme FlightworksControl -destination 'platform=macOS' \
-  -only-testing:FlightworksControlTests/Core/FlightReducerTests
-
-# Run determinism tests only
-xcodebuild test -scheme FlightworksControl -destination 'platform=macOS' \
-  -testPlan DeterminismTests
-
-# Run with coverage
-xcodebuild test -scheme FlightworksControl -destination 'platform=macOS' \
-  -enableCodeCoverage YES
-```
-
-### Test Naming Convention
-
-```
-test[Component]_[Scenario]_[ExpectedBehavior]
-
-Examples:
-- testFlightReducer_ArmWithValidPreconditions_Arms
-- testGeofenceValidator_PointOnEdge_ReturnsValid
-- testThermalAgent_SameInput_ProducesSameOutput
-```
-
----
-
-## Thermal Inspection Testing (Phase 5)
-
-### Test Datasets
-
-| Dataset | Purpose | Source |
-|---------|---------|--------|
-| `thermal_baseline.json` | Normal operation, no anomalies | Simulated |
-| `thermal_anomaly_roof.json` | Roof heat signature anomalies | Field collection |
-| `thermal_anomaly_electrical.json` | Electrical hotspots | Field collection |
-| `thermal_edge_cases.json` | Threshold boundary conditions | Generated |
-
-### Determinism Verification for ML Pipeline
-
-```swift
-func testThermalMLPipeline_EndToEnd_Determinism() async {
-    let frames = loadTestThermalFrames(dataset: "thermal_baseline")
-    
-    for frame in frames {
-        // Run ML inference twice
-        let output1 = await ThermalMLModel.infer(frame: frame)
-        let output2 = await ThermalMLModel.infer(frame: frame)
-        
-        // Core ML should produce identical outputs
-        XCTAssertEqual(output1.anomalyProbability, output2.anomalyProbability,
-            "ML inference non-deterministic")
-        
-        // Post-processing must be deterministic
-        let classification1 = ThermalAnomalyAgent.classify(output1)
-        let classification2 = ThermalAnomalyAgent.classify(output2)
-        
-        XCTAssertEqual(classification1, classification2,
-            "Classification non-deterministic")
-    }
-}
+      - uses: actions/checkout@v3
+      
+      - name: Run Property-Based Tests
+        run: xcodebuild test -scheme FlightworksControl \
+          -only-testing:PropertyBasedTests
+      
+      - name: Run FlightLaw Compliance Tests
+        run: xcodebuild test -scheme FlightworksControl \
+          -only-testing:FlightLawComplianceTests
+      
+      - name: Run Jurisdiction Inheritance Tests
+        run: xcodebuild test -scheme FlightworksControl \
+          -only-testing:JurisdictionInheritanceTests
+      
+      - name: Run ThermalLaw Tests
+        run: xcodebuild test -scheme FlightworksControl \
+          -only-testing:ThermalLawTests
+      
+      - name: Generate Coverage Report
+        run: xcrun llvm-cov report
+      
+      - name: Verify 100% Coverage (Critical Paths)
+        run: ./scripts/verify_critical_coverage.sh
 ```
 
 ---
 
 ## Related Documentation
 
-- [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) — Development workflow
-- [ARCHITECTURE.md](../ARCHITECTURE.md) — System design
-- [THERMAL_INSPECTION_EXTENSION.md](THERMAL_INSPECTION_EXTENSION.md) — Thermal feature spec
-- [CONTRIBUTING.md](../CONTRIBUTING.md) — Contribution guidelines
+| Document | Purpose |
+|----------|---------|
+| [ROADMAP.md](ROADMAP.md) | Development phases and milestones |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | System design and patterns |
+| [HLD-FlightworksCore.md](docs/HLD-FlightworksCore.md) | FlightLaw architecture |
+| [HLD-FlightworksThermal.md](docs/HLD-FlightworksThermal.md) | ThermalLaw architecture |
+| [PRD-FlightworksThermal.md](docs/PRD-FlightworksThermal.md) | ThermalLaw requirements |
+
+---
+
+## Revision History
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 2.0 | Feb 2026 | **Jurisdiction-based testing strategy** |
+|  |  | • Added jurisdiction inheritance tests |
+|  |  | • Added FlightLaw compliance tests |
+|  |  | • Updated for ThermalLaw/SurveyLaw |
+| 1.0 | Jan 2026 | Initial testing strategy (monolithic) |
+
+---
+
+<p align="center">
+  <strong>Flightworks Suite Testing</strong><br>
+  Verification for Safety-Critical Deterministic Systems
+</p>
