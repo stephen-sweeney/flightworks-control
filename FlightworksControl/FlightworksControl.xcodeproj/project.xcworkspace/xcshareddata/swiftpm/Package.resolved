@@ -1,0 +1,15 @@
+{
+  "originHash" : "9e66e41c07f13305a0e1a6636cdaac8d791175dc1ea2597b202472dbab35f341",
+  "pins" : [
+    {
+      "identity" : "swiftvector",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/stephen-sweeney/SwiftVector",
+      "state" : {
+        "revision" : "6ca9abdb21dba588d72b341492bab621739987e2",
+        "version" : "0.1.0"
+      }
+    }
+  ],
+  "version" : 3
+}

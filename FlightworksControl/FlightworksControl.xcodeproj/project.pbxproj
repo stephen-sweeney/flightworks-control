@@ -207,11 +207,11 @@
 			);
 			mainGroup = 4A76F0462F206E95005BDF46;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				4A0000072F300000005BDF46 /* XCRemoteSwiftPackageReference "https://github.com/stephen-sweeney/SwiftVector" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 4A76F0502F206E95005BDF46 /* Products */;
-			packageReferences = (
-				4A0000072F300000005BDF46 /* XCLocalSwiftPackageReference "SwiftVector" */,
-			);
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -426,7 +426,6 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
@@ -457,7 +456,6 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
@@ -586,26 +584,29 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		4A0000072F300000005BDF46 /* XCLocalSwiftPackageReference "SwiftVector" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../SwiftVector;
+/* Begin XCRemoteSwiftPackageReference section */
+		4A0000072F300000005BDF46 /* XCRemoteSwiftPackageReference "https://github.com/stephen-sweeney/SwiftVector" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/stephen-sweeney/SwiftVector";
+			requirement = {
+				kind = exactVersion;
+				version = "0.1.0";
+			};
 		};
-/* End XCLocalSwiftPackageReference section */
+/* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		4A0000032F300000005BDF46 /* SwiftVectorCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 4A0000072F300000005BDF46 /* XCLocalSwiftPackageReference "SwiftVector" */;
+			package = 4A0000072F300000005BDF46 /* XCRemoteSwiftPackageReference "https://github.com/stephen-sweeney/SwiftVector" */;
 			productName = SwiftVectorCore;
 		};
 		4A0000062F300000005BDF46 /* SwiftVectorTesting */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 4A0000072F300000005BDF46 /* XCLocalSwiftPackageReference "SwiftVector" */;
+			package = 4A0000072F300000005BDF46 /* XCRemoteSwiftPackageReference "https://github.com/stephen-sweeney/SwiftVector" */;
 			productName = SwiftVectorTesting;
 		};
 /* End XCSwiftPackageProductDependency section */
-
 	};
 	rootObject = 4A76F0472F206E95005BDF46 /* Project object */;
 }
