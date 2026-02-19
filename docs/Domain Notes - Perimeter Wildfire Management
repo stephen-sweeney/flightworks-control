@@ -1,0 +1,102 @@
+**Domain Notes: Perimeter Wildfire Management**  
+*Prepared for Ground Control Station (GCS) Use Case Brief – Drone/Drone Swarm Integration*  
+*As of February 2026 | Expert Synthesis for Fire Management Domain*
+
+These notes focus on the operational core of **perimeter wildfire management** (the active edge or boundary of a wildland fire where suppression occurs). They draw from NWCG standards, ICS frameworks, and interagency practices. The goal is to inform GCS requirements for real-time drone/swarm oversight, data ingestion, tasking, and decision support in dynamic perimeter ops.
+
+### 1. Glossary (Key Operational Terms)
+Selected terms relevant to perimeter tactics, drawn primarily from NWCG PMS 205 (via cross-referenced standards), Wikipedia Glossary of Wildfire Terms (sourced from NWCG/ agency docs), and NIFC references. Focus is on perimeter-specific concepts.
+
+- **Anchor Point**: Secure starting location (e.g., road, rock, or water) from which fireline construction begins to prevent the line from being flanked.  
+- **Backburn / Burnout**: Controlled fire set along the inside of a control line to consume fuel between the line and the main fire edge.  
+- **Contain a Fire**: Moderately aggressive strategy to keep the fire within established constructed or natural firelines under prevailing conditions (percentage-based reporting, e.g., 50% contained).  
+- **Control (a Fire)**: Full suppression where lines surround the fire (including spot fires) and burning potential is reduced so it no longer threatens spread under foreseeable conditions.  
+- **Confine**: Least aggressive strategy; restrict spread to a predetermined area using natural barriers with minimal line construction.  
+- **Control Line**: Inclusive term for all constructed/natural barriers and retardant-treated edges used to control a fire.  
+- **Fireline**: The scraped/dug portion of a control line taken to mineral soil (handline, dozer line, etc.).  
+- **Fire Perimeter**: Current boundary between burned/active fire and unburned fuel (updated daily; polygon in GIS).  
+- **Direct Attack**: Tactics applied directly to the burning edge (e.g., wetting, hand tools, or retardant drops).  
+- **Indirect Attack**: Control line built some distance from the active edge; often paired with burnout/backburn (used on fast-spreading or high-intensity fires).  
+- **Head of the Fire**: Fastest-spreading portion of the perimeter (usually downwind or upslope).  
+- **Flanks**: Sides of the perimeter running parallel to the main spread direction.  
+- **Heel / Rear**: Trailing, slower-burning portion of the perimeter.  
+- **Hot Spotting**: Rapid suppression of active points along the perimeter to prevent spread.  
+- **Mop-up**: Extinguishing smoldering material near control lines, trenching logs, and felling snags to secure the line.  
+- **Slopover / Spot Fire**: Fire crossing a control line (slopover) or new ignition ahead of the perimeter via embers (spotting).  
+- **LCES**: Lookouts, Communications, Escape Routes, Safety Zones – mandatory safety system for all perimeter operations.  
+- **Management Action Point (MAP)**: Geospatial trigger (e.g., “if fire reaches X ridge”) that activates a specific perimeter tactic or strategy shift.  
+- **Blowup / Flare-up**: Sudden, violent increase in fire intensity or rate of spread that can overrun lines.  
+
+Additional tactical terms (e.g., **Parallel Attack**, **Knock Down**) follow similar NWCG definitions.
+
+### 2. Typical Workflow Patterns
+Perimeter management follows the Incident Command System (ICS) planning/operations cycle and NWCG risk-management processes (IRPG five-step: situational awareness → assess → controls → implement → evaluate). It is iterative and daily.
+
+**High-Level Sequence (Initial Attack to Control)**  
+1. **Detection/Size-Up** – Confirm ignition, estimate perimeter, identify head/flanks/heel, values at risk.  
+2. **Strategy Selection (via WFDSS or IAP)** – Full perimeter suppression, confine/contain, point/zone protection, or monitor. Document in Course of Action with MAPs.  
+3. **Tactical Execution (Operations Section)** – Anchor and build control lines (direct on flanks/head if feasible; indirect with burnout on head). Use hand crews, dozers, engines, air resources. Prioritize head, then flanks.  
+4. **Hold & Secure** – Patrol lines, hot spot, apply retardant/water. Burn out interior fuels. Update containment % daily.  
+5. **Mop-up & Patrol** – Extinguish near-line fuel; monitor for slopovers/spot fires (often 24–72+ hours).  
+6. **Transition to Control/Out** – Lines hold under forecast conditions; demobilize.  
+
+**Daily GIS/Planning Cycle (GISS Workflow – NWCG PMS 936-1)**  
+- Ingest new perimeter data (aerial/ground/drone).  
+- Edit EventPolygon (daily fire perimeter) and PerimeterLine features in offline copy → calculate acres, containment, ownership.  
+- Sync to Master Incident GDB → produce progression maps, web maps, Geospatial PDFs.  
+- Integrate into IAP (ICS-202, ICS-215A safety analysis, maps).  
+
+**Risk-Management Overlay** – Every perimeter action uses LCES + JHA/RA. Strategies are reevaluated at MAP triggers or weather shifts.
+
+### 3. Common Hazards / Edge Cases
+Perimeter work is the highest-risk phase (direct exposure to fire behavior, terrain, and fatigue). From NIFC Red Book Chapter 7 and IRPG:
+
+- **Fire Behavior** – Blowups, rapid flanking runs, spotting (embers crossing lines), crown fire runs. Edge case: wind shift reverses head → former heel becomes active.  
+- **Terrain/Access** – Steep slopes (downhill line construction checklist required), poor visibility, snags/hazard trees.  
+- **Environmental** – Dense smoke (visibility + CO/HCN exposure), night ops, extreme heat.  
+- **Operational** – Fatigue (exceeding 2:1 work/rest), line breaches (slopover), WUI complexity (structures vs. wildland tactics), aerial drop gravity hazards.  
+- **Human Factors** – Right to refuse unsafe assignments; visitors on line without quals.  
+
+**High-Risk Edge Cases**  
+- Multiple spot fires overwhelming patrol capacity.  
+- Fire in complex ownership (MAPs misaligned).  
+- Sudden blowup during mop-up or burnout ops.  
+- UXO, coal-seam gas, or hazardous materials in perimeter.  
+
+Mitigations: LCES briefings every shift, MAP triggers, smoke monitoring in IAP.
+
+### 4. Common Artifacts / Outputs
+- **GIS Layers** (GeoOps/NIFC standards): Daily Fire Perimeter Polygon, PerimeterLine, EventLine (control lines, MAPs, burnout lines), Values at Risk, TFRs.  
+- **Maps**: Progression maps, incident web maps, Geospatial PDFs (exported nightly), Situation Unit products.  
+- **ICS Forms**: IAP (with perimeter maps), ICS-209 (incident status/containment %), ICS-215A (safety analysis).  
+- **Reports**: Containment percentage, resource status, BAER (post-fire) inputs.  
+- **Digital Products**: Web maps for field crews/Cooperatores/Public, photo points, tile packages for mobile devices.
+
+### Pain Points Currently Faced by Fire Departments
+- **Limited Situational Awareness**: Smoke obscures visual scouting; ground crews have delayed/incomplete perimeter views → reactive rather than proactive tactics.  
+- **Personnel Risk & Fatigue**: Manual line construction, hot spotting, and patrol expose crews to blowups, spotting, and long shifts; workforce shortages exacerbate this.  
+- **Slow Mapping & Updates**: Traditional aerial/ground perimeter capture lags (hours to daily); GISS editing is manual and bottlenecked.  
+- **Resource Strain**: Large perimeters require massive crews/dozers/aircraft; WUI diverts resources from pure perimeter control.  
+- **Cost & Scalability**: Manned aviation is expensive and weather-limited; night ops are high-risk.  
+- **Decision Latency**: MAP triggers and strategy shifts suffer from incomplete real-time data.
+
+### Advantages Drone & Drone Swarm Operations Bring to Perimeter Management
+Drones directly address the above pain points and are already proven in wildfire response (thermal/IR, real-time mapping, hotspot detection).
+
+- **Enhanced Real-Time SA**: Thermal/IR penetrates smoke for continuous perimeter mapping, hotspot identification, and spot-fire confirmation → feeds live to GCS and ICS (faster GISS updates, higher-accuracy containment %).  
+- **Safer Operations**: Reduces ground crew exposure in high-risk zones (head/flanks scouting, line cooling assessment, post-burnout monitoring). LCES improves with drone-derived escape-route visuals.  
+- **Speed & Coverage**: Rapid deployment (minutes) vs. manned aircraft; swarms provide persistent, coordinated coverage of large or complex perimeters (head + both flanks simultaneously).  
+- **Cost & Efficiency**: Lower operating cost than helos; scalable for night/poor-weather persistence; AI-assisted perimeter digitization accelerates GIS workflow.  
+- **Tactical Enablers for GCS**: Swarm tasking for specific missions (e.g., confirm MAP trigger, guide burnout ignition if equipped, monitor slopover risk). Direct data ingestion into IAP/web maps. Supports strategy shifts (e.g., switch from indirect to direct when drone data shows fire intensity drop).  
+- **Integration Value**: GCS becomes the hub for swarm telemetry, video, thermal overlays, and automated alerts (e.g., “spot fire detected at coord X”) → closes the loop between drone ops and IC/Operations/GISS.
+
+These notes position a drone-swarm GCS as a force multiplier for perimeter containment: faster, safer, more precise control-line decisions with reduced human exposure. For the use-case brief, recommend GCS features such as live perimeter overlay on ICS maps, swarm autonomy modes (e.g., “patrol flanks”), MAP trigger alerts, and seamless export to GeoOps GDB.
+
+**Citations / Primary Sources** (browsed/verified February 2026)  
+- NWCG PMS 936-1: GISS Workflow (https://www.nwcg.gov/publications/pms936-1).  
+- USDA FS RMRS-GTR-298: Decision Making for Wildfires (https://research.fs.usda.gov/treesearch/download/43638.pdf).  
+- NIFC Red Book Chapter 7: Safety & Risk Management (https://www.nifc.gov/sites/default/files/redbook-files/Chapter07.pdf).  
+- Wikipedia Glossary of Wildfire Terms (NWCG-derived).  
+- Additional context from NWCG PMS 205 references and NIFC GeoOps standards.
+
+If you need expansions (e.g., sample GCS wireframes, specific swarm CONOPS examples, or deeper dive into one section), provide details on the exact focus area or target audience for the brief.

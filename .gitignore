@@ -11,7 +11,6 @@ xcuserdata/
 *.moved-aside
 *.xcuserstate
 *.xcscmblueprint
-*.xcscheme
 
 # Build
 build/
@@ -24,7 +23,10 @@ DerivedData/
 Packages/
 Package.pins
 Package.resolved
-*.xcodeproj
+
+# SwiftVector local dependency (cloned separately from https://github.com/stephen-sweeney/SwiftVector at tag 0.1.0)
+# Clone with: git clone https://github.com/stephen-sweeney/SwiftVector --branch 0.1.0 --depth 1
+SwiftVector/
 
 # CocoaPods (if used)
 Pods/
@@ -77,3 +79,4 @@ fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
 
+.claude/worktrees/
