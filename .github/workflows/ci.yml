@@ -1,0 +1,210 @@
+# .github/workflows/ci.yml
+#
+# FlightworksControl — Continuous Integration
+#
+# Runs on GitHub-hosted macOS 15 runners (Xcode 16.2, iOS 18.x simulators).
+#
+# DEPLOYMENT TARGET NOTE:
+#   The project's IPHONEOS_DEPLOYMENT_TARGET is 26.2 (iOS 26.2 beta, used
+#   for local development). GitHub-hosted runners only carry the iOS 18.x SDK.
+#   We override IPHONEOS_DEPLOYMENT_TARGET to 18.2 on the xcodebuild command
+#   line for every CI step. This does NOT modify project.pbxproj — local
+#   development continues to target iOS 26.2.
+#
+# SWIFT TESTING NOTE:
+#   All tests use the Swift Testing framework (import Testing). On iOS 18.2
+#   stable simulators with Xcode 16.x, Swift Testing runs correctly. The
+#   iOS 26.2 beta ABI-mismatch crash-restart bug does not occur here.
+#
+# NON-DETERMINISM ENFORCEMENT:
+#   swiftvector-invariants.md mandates a scan for direct Date(), UUID(), and
+#   .random calls in all Swift source files. This is enforced as a required CI
+#   step — any match fails the workflow.
+
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+# Cancel in-progress runs for the same branch/PR to avoid queue buildup.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PROJECT: FlightworksControl/FlightworksControl.xcodeproj
+  SCHEME: FlightworksControl
+  DESTINATION: platform=iOS Simulator,name=iPhone 16,OS=18.2
+  # Override the project's 26.2 deployment target for CI SDK compatibility.
+  DEPLOYMENT_TARGET: "18.2"
+  RESULT_BUNDLE_PATH: TestResults.xcresult
+
+jobs:
+  build-and-test:
+    name: Build & Test (Xcode 16, iOS 18.2)
+    runs-on: macos-15
+
+    steps:
+      # ── 1. Checkout ─────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Select Xcode version ─────────────────────────────────────────────
+      # macos-15 ships with Xcode 16.2 as its default Xcode; select it
+      # explicitly to prevent future runner updates from silently changing the
+      # Xcode version used by this workflow.
+      - name: Select Xcode 16.2
+        run: |
+          if [ -d /Applications/Xcode_16.2.app ]; then
+            sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
+          else
+            echo "Xcode 16.2 not found; using default Xcode."
+            echo "Available Xcode installations:"
+            ls /Applications/ | grep -i xcode || true
+          fi
+
+      # ── 3. Show environment ──────────────────────────────────────────────────
+      - name: Show Xcode and Swift version
+        run: |
+          xcodebuild -version
+          swift --version
+          echo "Available iOS simulator runtimes:"
+          xcrun simctl list runtimes | grep iOS || true
+
+      # ── 4. Cache SPM dependencies ────────────────────────────────────────────
+      # Cache keyed on the committed Package.resolved to avoid re-fetching
+      # SwiftVectorCore on every run.
+      - name: Cache Swift Package Manager dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Developer/Xcode/DerivedData/FlightworksControl-*/SourcePackages
+          key: spm-${{ runner.os }}-${{ hashFiles('FlightworksControl/FlightworksControl.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
+          restore-keys: |
+            spm-${{ runner.os }}-
+
+      # ── 5. Resolve Swift Package dependencies ────────────────────────────────
+      - name: Resolve Swift Package dependencies
+        run: |
+          xcodebuild -resolvePackageDependencies \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            IPHONEOS_DEPLOYMENT_TARGET="$DEPLOYMENT_TARGET"
+
+      # ── 6. Build ─────────────────────────────────────────────────────────────
+      # Compile-only step. Fails fast on errors before simulator launch.
+      - name: Build
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -destination "$DESTINATION" \
+            -configuration Debug \
+            IPHONEOS_DEPLOYMENT_TARGET="$DEPLOYMENT_TARGET" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            AD_HOC_CODE_SIGNING_ALLOWED=YES \
+          | xcpretty --color
+
+      # ── 7. Run tests with coverage ────────────────────────────────────────────
+      # -parallel-testing-enabled NO: defensive setting that reduces suite-restart
+      # flakiness documented in MEMORY.md for simulator-based Swift Testing.
+      # -enableCodeCoverage YES: embeds coverage data in the .xcresult bundle.
+      - name: Run tests
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -destination "$DESTINATION" \
+            -configuration Debug \
+            -enableCodeCoverage YES \
+            -resultBundlePath "$RESULT_BUNDLE_PATH" \
+            -parallel-testing-enabled NO \
+            IPHONEOS_DEPLOYMENT_TARGET="$DEPLOYMENT_TARGET" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            AD_HOC_CODE_SIGNING_ALLOWED=YES \
+          | xcpretty --color
+
+      # ── 8. Generate coverage report ───────────────────────────────────────────
+      # Produces a human-readable text summary and machine-readable JSON.
+      # Runs even on test failure so partial coverage data is preserved.
+      - name: Generate coverage report
+        if: always()
+        run: |
+          echo "=== Coverage Summary ==="
+          xcrun xccov view --report "$RESULT_BUNDLE_PATH" 2>/dev/null \
+            || echo "Coverage summary unavailable."
+
+          echo "=== Per-target coverage ==="
+          xcrun xccov view --report --only-targets "$RESULT_BUNDLE_PATH" 2>/dev/null || true
+
+          echo "=== Generating JSON report ==="
+          xcrun xccov view --report --json "$RESULT_BUNDLE_PATH" > coverage.json 2>/dev/null \
+            || echo "{}" > coverage.json
+          echo "Coverage JSON written to coverage.json."
+
+      # ── 9. Upload .xcresult artifact ──────────────────────────────────────────
+      # The full .xcresult bundle can be downloaded and opened locally in Xcode
+      # for deep test result and coverage inspection.
+      - name: Upload test results (.xcresult)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: TestResults-${{ github.run_number }}
+          path: ${{ env.RESULT_BUNDLE_PATH }}
+          retention-days: 14
+          if-no-files-found: warn
+
+      # ── 10. Upload coverage JSON artifact ────────────────────────────────────
+      - name: Upload coverage report (JSON)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Coverage-${{ github.run_number }}
+          path: coverage.json
+          retention-days: 14
+          if-no-files-found: warn
+
+      # ── 11. SwiftVector non-determinism scan ──────────────────────────────────
+      # swiftvector-invariants.md HARD REQUIREMENT: no direct Date(), UUID(), or
+      # .random() calls in production Swift source. Lines annotated with
+      # "// deterministic:" are the sole documented exception.
+      # Any match causes this step — and the workflow — to fail.
+      - name: Scan for non-determinism violations (swiftvector-invariants.md)
+        run: |
+          VIOLATIONS=0
+
+          echo "=== Scanning for direct Date() calls ==="
+          DATES=$(grep -rn "Date()" --include="*.swift" \
+            FlightworksControl/FlightworksControl/ \
+            | grep -v "// deterministic:" || true)
+          [ -n "$DATES" ] && echo "$DATES" && VIOLATIONS=1
+
+          echo "=== Scanning for direct UUID() calls ==="
+          UUIDS=$(grep -rn "UUID()" --include="*.swift" \
+            FlightworksControl/FlightworksControl/ \
+            | grep -v "// deterministic:" || true)
+          [ -n "$UUIDS" ] && echo "$UUIDS" && VIOLATIONS=1
+
+          echo "=== Scanning for .random calls ==="
+          RANDOMS=$(grep -rn "\.random" --include="*.swift" \
+            FlightworksControl/FlightworksControl/ \
+            | grep -v "// deterministic:" || true)
+          [ -n "$RANDOMS" ] && echo "$RANDOMS" && VIOLATIONS=1
+
+          if [ "$VIOLATIONS" -ne 0 ]; then
+            echo ""
+            echo "Non-determinism violations detected."
+            echo "See swiftvector-invariants.md — Forbidden Patterns section."
+            exit 1
+          fi
+
+          echo "Non-determinism scan passed — no violations found."

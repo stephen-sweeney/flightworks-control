@@ -1,0 +1,56 @@
+#!/bin/bash
+#
+# .githooks/pre-commit
+# FlightworksControl — SwiftVector Non-Determinism Pre-Commit Scanner
+#
+# Enforces the swiftvector-invariants.md HARD REQUIREMENT that no direct
+# Date(), UUID(), or .random() calls appear in production Swift source.
+# Lines annotated with "// deterministic:" are the sole documented exception.
+#
+# INSTALL (once per clone):
+#   git config core.hooksPath .githooks
+#
+# To bypass in an emergency (rare, discouraged):
+#   git commit --no-verify
+
+set -e
+
+echo "SwiftVector pre-commit: scanning for non-determinism violations..."
+
+VIOLATIONS=0
+PROJ="FlightworksControl/FlightworksControl"
+
+DATES=$(grep -rn "Date()" --include="*.swift" "$PROJ" 2>/dev/null \
+    | grep -v "// deterministic:" || true)
+UUIDS=$(grep -rn "UUID()" --include="*.swift" "$PROJ" 2>/dev/null \
+    | grep -v "// deterministic:" || true)
+RANDOMS=$(grep -rn "\.random" --include="*.swift" "$PROJ" 2>/dev/null \
+    | grep -v "// deterministic:" || true)
+
+if [ -n "$DATES" ]; then
+    echo "ERROR: Direct Date() calls found (breaks replay determinism):"
+    echo "$DATES"
+    VIOLATIONS=1
+fi
+
+if [ -n "$UUIDS" ]; then
+    echo "ERROR: Direct UUID() calls found (breaks replay determinism):"
+    echo "$UUIDS"
+    VIOLATIONS=1
+fi
+
+if [ -n "$RANDOMS" ]; then
+    echo "ERROR: Direct .random calls found (breaks replay determinism):"
+    echo "$RANDOMS"
+    VIOLATIONS=1
+fi
+
+if [ "$VIOLATIONS" -ne 0 ]; then
+    echo ""
+    echo "Commit blocked. Use injected Clock/UUIDGenerator instead."
+    echo "See swiftvector-invariants.md — Required Pattern: Dependency Injection."
+    echo "Exception: annotate the line with '// deterministic:' if genuinely required."
+    exit 1
+fi
+
+echo "Non-determinism scan passed."

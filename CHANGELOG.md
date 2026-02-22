@@ -7,10 +7,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-- Thermal inspection extension specification ([THERMAL_INSPECTION_EXTENSION.md](docs/THERMAL_INSPECTION_EXTENSION.md))
-- Comprehensive testing strategy ([TESTING_STRATEGY.md](docs/TESTING_STRATEGY.md))
-- AI-assisted development plan ([DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.md))
+### Added — Phase 0: FlightLaw Foundation (SP0-1 through SP0-6)
+
+#### SP0-1: Project Infrastructure
+- Xcode project created with directory structure per CLAUDE.md module map
+- SwiftVectorCore integrated as remote SPM dependency (`https://github.com/stephen-sweeney/SwiftVector` @ `0.1.0`)
+- iOS deployment target: 26.2; Swift 5.9+; SwiftUI app entry point
+- `Package.resolved` committed to pin SwiftVectorCore `0.1.0`
+
+#### SP0-2: State Layer
+- `FlightState` — immutable struct conforming to `SwiftVectorCore.State` (Equatable, Codable, Sendable, SHA-256 `stateHash()`)
+- `SupportingTypes` — Position (WGS-84), Attitude (Euler), BatteryState, GPSInfo, TelemetryData, ConnectionStatus, ArmingState, FlightMode, GPSFixType, Mission, Waypoint, Geofence, ConnectionConfig
+- `MissionState` — Phase 1 stub
+- `ThermalState` — Phase 5 extension point stub
+- `FlightState.with()` — optional-of-optional pattern for immutable field updates
+- `FlightState.initial` — epoch-sentinel `lastUpdated`; all calibration flags `false`
+- Arming precondition fields: `imuCalibrated`, `compassCalibrated` (PRD FR-2.2, FR-2.3)
+- `StateLayerTests` — Codable round-trip, Equatable, `.with()` immutability, `stateHash()` determinism
+
+#### SP0-3: Action Layer
+- `FlightAction` — 17-case enum conforming to `SwiftVectorCore.Action` (Equatable, Codable, Sendable, `correlationID`, `actionDescription`)
+- Cases: connect, disconnect, connectionStatusChanged, telemetryReceived, sensorCalibrationUpdated, arm, disarm, takeoff, land, returnToLaunch, setFlightMode, loadMission, startMission, pauseMission, clearMission, setGeofence, clearGeofence
+- `ThermalAction` — Phase 5 stub (enableDetection, disableDetection)
+- `ActionLayerTests` — Codable round-trip, Equatable, `correlationID` extraction, `actionDescription` coverage
+
+#### SP0-4: Reducer Layer
+- `FlightReducer` — pure function conforming to `SwiftVectorCore.Reducer`; handles all 17 `FlightAction` cases
+- Safety interlocks (100% test coverage): GPS 3D fix required to arm; battery ≥ 20% to arm; IMU + compass calibration required to arm; geofence required to arm (Law 7); disarmed required to takeoff; mode changes blocked during takeoff/landing
+- `canArm()`, `canTakeoff()`, `canChangeMode()` — pure helper predicates
+- `ThermalReducer` — Phase 5 stub
+- `ReducerLayerTests` — 9 serialised `@Suite` structs covering all action cases and interlock combinations
+
+#### SP0-5: Orchestrator Layer
+- `FlightOrchestrator` (`actor`) — runtime boundary between UI/agents and `FlightReducer`
+- `dispatch(_:agentID:)` — sole state-change entry point; runs reducer, appends hash-chained `AuditEvent` to `EventLog<FlightAction>`, yields new state to `AsyncStream`
+- Hash chain: each `AuditEvent.previousEntryHash = auditLog.lastEntryHash` — tamper-evident
+- `replay(log:) -> ReplayResult` — re-executes accepted actions against `FlightState.initial`, verifies final state hash
+- `stateStream() -> AsyncStream<FlightState>` — reactive state for SwiftUI observation
+- `Clock` + `UUIDGenerator` injected — zero `Date()` or `UUID()` calls in actor body
+- `OrchestratorTests` — 4 serialised suites: dispatch, audit trail, replay, full connect→arm integration cycle
+
+#### SP0-6: CI/CD
+- `.github/workflows/ci.yml` — GitHub Actions CI on `macos-15` / Xcode 16.2 / iOS 18.2 simulator
+  - Overrides `IPHONEOS_DEPLOYMENT_TARGET=18.2` for CI (project targets iOS 26.2 locally; GitHub runners only carry iOS 18.x SDK)
+  - Steps: checkout, Xcode 16.2 selection, SPM cache (keyed on `Package.resolved`), resolve, build, test (`-enableCodeCoverage YES`, `-parallel-testing-enabled NO`), coverage report (text + JSON), `.xcresult` and `coverage.json` artifact upload (14-day retention), mandatory non-determinism scan
+  - Non-determinism scan: fails workflow on any direct `Date()`, `UUID()`, or `.random` in production Swift source (excluding `// deterministic:` exceptions)
+  - Concurrency: `cancel-in-progress: true` for push/PR triggers on `main`
+- `.githooks/pre-commit` — local mirror of CI non-determinism scan; activate with `git config core.hooksPath .githooks`
+- `README.md` — CI badge, corrected build/test commands, pre-commit hook activation instructions
+
+### Added — Previous Documentation
+- Thermal inspection extension specification
+- Comprehensive testing strategy
+- AI-assisted development plan
 - Edge AI architecture patterns in documentation
 
 ### Changed

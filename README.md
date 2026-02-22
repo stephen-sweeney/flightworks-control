@@ -4,7 +4,7 @@
 
 An open-source suite demonstrating deterministic AI control through composable jurisdictions. **FlightLaw** provides universal safety guarantees, extended by mission-specific jurisdictions (**ThermalLaw** for inspection, **SurveyLaw** for mapping) built on [SwiftVector](docs/SWIFTVECTOR.md) principles.
 
-[![Build Status](https://github.com/stephen-sweeney/flightworks-control/workflows/Test%20Suite/badge.svg)](https://github.com/stephen-sweeney/flightworks-control/actions)
+[![CI](https://github.com/stephen-sweeney/flightworks-control/actions/workflows/ci.yml/badge.svg)](https://github.com/stephen-sweeney/flightworks-control/actions/workflows/ci.yml)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20iOS-lightgrey)](https://github.com/stephen-sweeney/flightworks-control)
 [![Swift](https://img.shields.io/badge/swift-5.9+-orange)](https://swift.org)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
@@ -195,21 +195,47 @@ git clone https://github.com/stephen-sweeney/flightworks-control.git
 cd flightworks-control
 
 # Open in Xcode
-open FlightworksControl.xcodeproj
+open FlightworksControl/FlightworksControl.xcodeproj
 
-# Build and run (⌘R)
+# Build and run (⌘R in Xcode, targeting an iOS 26.2 simulator)
+```
+
+### Building from the Command Line
+
+```bash
+# Build (iOS Simulator — requires Xcode with iOS 26.2 SDK)
+xcodebuild build \
+  -project FlightworksControl/FlightworksControl.xcodeproj \
+  -scheme FlightworksControl \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+  -configuration Debug \
+  CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 ```
 
 ### Running Tests
 
 ```bash
-# Run all tests
-xcodebuild test -scheme FlightworksControl -destination 'platform=macOS'
-
-# Run determinism tests only
-xcodebuild test -scheme FlightworksControl -destination 'platform=macOS' \
-  -only-testing:FlightworksControlTests/Core/ReducerDeterminismTests
+# Run all tests (iOS Simulator)
+xcodebuild test \
+  -project FlightworksControl/FlightworksControl.xcodeproj \
+  -scheme FlightworksControl \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+  -configuration Debug \
+  -enableCodeCoverage YES \
+  -parallel-testing-enabled NO \
+  CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 ```
+
+### Pre-commit Hook (Non-Determinism Scan)
+
+```bash
+# Activate the pre-commit hook once per clone:
+git config core.hooksPath .githooks
+```
+
+The hook blocks commits that introduce direct `Date()`, `UUID()`, or `.random` calls
+in production Swift source, enforcing SwiftVector determinism invariants locally
+before CI catches them.
 
 ---
 
