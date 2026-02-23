@@ -60,21 +60,6 @@ private final class SequentialUUIDGenerator: UUIDGenerator, @unchecked Sendable 
 private let fixedTimestamp = Date(timeIntervalSince1970: 1_000_000)
 private let dispatchAgentID = "TestHarness"
 
-/// Creates a ready-to-arm state via dispatched actions (realistic path).
-private func makeReadyToArmState() -> FlightState {
-    FlightState.initial.with(
-        connectionStatus: .connected,
-        battery: .some(BatteryState(percentage: 85.0, voltageV: 12.4, temperatureC: 25.0)),
-        gpsInfo: .some(GPSInfo(fixType: .fix3D, satelliteCount: 12)),
-        imuCalibrated: true,
-        compassCalibrated: true,
-        activeGeofence: .some(Geofence(
-            center: Position(latitude: 37.7749, longitude: -122.4194, altitudeMSL: 0.0),
-            radiusMetres: 500.0
-        ))
-    )
-}
-
 // MARK: - FlightOrchestrator: dispatch tests
 
 @Suite("FlightOrchestrator: dispatch", .serialized)
