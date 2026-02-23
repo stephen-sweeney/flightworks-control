@@ -76,6 +76,34 @@ struct FlightReducerFlightControlTests {
         #expect(result.rationale.contains("flying") || result.rationale.contains("hovering"))
     }
 
+    @Test("land: rejected when takingOff")
+    func landRejectedWhenTakingOff() {
+        let state = makeArmedIdleState().with(flightMode: .takingOff)
+        let result = FlightReducer().reduce(state: state, action: .land(correlationID: testID))
+        #expect(result.applied == false)
+    }
+
+    @Test("land: rejected when already landing")
+    func landRejectedWhenAlreadyLanding() {
+        let state = makeArmedIdleState().with(flightMode: .landing)
+        let result = FlightReducer().reduce(state: state, action: .land(correlationID: testID))
+        #expect(result.applied == false)
+    }
+
+    @Test("land: rejected when returningToLaunch")
+    func landRejectedWhenReturningToLaunch() {
+        let state = makeArmedIdleState().with(flightMode: .returningToLaunch)
+        let result = FlightReducer().reduce(state: state, action: .land(correlationID: testID))
+        #expect(result.applied == false)
+    }
+
+    @Test("land: rejected when in manual mode")
+    func landRejectedWhenManual() {
+        let state = makeArmedIdleState().with(flightMode: .manual)
+        let result = FlightReducer().reduce(state: state, action: .land(correlationID: testID))
+        #expect(result.applied == false)
+    }
+
     @Test("returnToLaunch: accepted when armed")
     func returnToLaunchAccepted() {
         let result = FlightReducer().reduce(state: makeArmedFlyingState(), action: .returnToLaunch(correlationID: testID))

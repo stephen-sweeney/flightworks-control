@@ -62,4 +62,20 @@ struct FlightReducerDisarmTests {
         let result = FlightReducer().reduce(state: state, action: .disarm(correlationID: testID))
         #expect(result.applied == false)
     }
+
+    @Test("disarm: rejected when returningToLaunch")
+    func disarmRejectedWhenReturningToLaunch() {
+        let state = makeArmedIdleState().with(flightMode: .returningToLaunch)
+        let result = FlightReducer().reduce(state: state, action: .disarm(correlationID: testID))
+        #expect(result.applied == false)
+        #expect(result.rationale.contains("returningToLaunch"))
+    }
+
+    @Test("disarm: rejected when in manual mode")
+    func disarmRejectedWhenManual() {
+        let state = makeArmedIdleState().with(flightMode: .manual)
+        let result = FlightReducer().reduce(state: state, action: .disarm(correlationID: testID))
+        #expect(result.applied == false)
+        #expect(result.rationale.contains("manual"))
+    }
 }

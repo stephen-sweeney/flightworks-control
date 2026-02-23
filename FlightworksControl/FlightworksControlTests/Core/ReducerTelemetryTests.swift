@@ -43,6 +43,24 @@ struct FlightReducerTelemetryTests {
         #expect(result.newState.telemetry == telemetry)
     }
 
+    @Test("telemetryReceived: propagates non-nil attitude to state")
+    func telemetryReceivedPropagatesAttitude() {
+        let attitude = Attitude(rollDeg: 5.0, pitchDeg: -3.0, yawDeg: 180.0)
+        let telemetry = TelemetryData(
+            position: nil,
+            attitude: attitude,
+            battery: nil,
+            gpsInfo: nil,
+            timestamp: Date(timeIntervalSince1970: 600)
+        )
+        let result = FlightReducer().reduce(
+            state: FlightState.initial,
+            action: .telemetryReceived(data: telemetry, correlationID: testID)
+        )
+        #expect(result.applied == true)
+        #expect(result.newState.attitude == attitude)
+    }
+
     @Test("sensorCalibrationUpdated: sets both calibration flags")
     func sensorCalibrationUpdatedSetsFlags() {
         let result = FlightReducer().reduce(

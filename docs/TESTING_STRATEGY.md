@@ -600,6 +600,43 @@ jobs:
 
 ---
 
+## Known Issues
+
+### Xcode 26.2 Beta: iOS Simulator Test Host Crash (February 2026)
+
+**Status:** Open — Xcode toolchain bug, no code-level workaround available.
+
+**Symptom:** All Swift Testing (`@Suite`/`@Test`) tests crash the test host on first
+launch with `EXC_BAD_ACCESS (SIGSEGV)` at address `0xfffffffffffffff8`. The crash
+occurs in `swift_conformsToProtocolMaybeInstantiateSuperclasses` during generic type
+metadata resolution for `ReducerResult<FlightState>`. After the crash, the test host
+auto-restarts and all tests pass on the second attempt. However, `xcodebuild` reports
+`** TEST FAILED **` due to the initial process exit.
+
+**Environment:**
+- Xcode 26.2 (Build 17C52)
+- macOS 26.3 (25D125)
+- iOS 26.2 Simulator (iPad Pro 13-inch M5 and others)
+- Swift Testing framework (Testing Library Version 1501)
+
+**Scope:** Affects ALL test suites — both synchronous reducer tests and async
+orchestrator tests. Not specific to any test code or `AsyncStream` usage.
+
+**Root cause:** Swift Runtime race condition in generic type metadata initialization
+on iOS Simulator. The crash stack shows `swift_getTypeByMangledName` →
+`swift_conformsToProtocol` → SIGSEGV when the runtime first resolves
+`ReducerResult<FlightState>` conformance metadata.
+
+**Impact on CI:** GitHub Actions workflows using `xcodebuild test` will report failure
+despite all tests being functionally correct. Consider using `-retry-tests-on-failure`
+or checking the `.xcresult` bundle for actual test assertions rather than relying on
+the exit code.
+
+**TODO:** Re-test when Xcode 26.3 or a later beta is released. If resolved, remove
+this section.
+
+---
+
 ## Revision History
 
 | Version | Date | Changes |

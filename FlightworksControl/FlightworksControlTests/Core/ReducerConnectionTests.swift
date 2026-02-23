@@ -45,6 +45,15 @@ struct FlightReducerConnectionTests {
         #expect(result.applied == false)
     }
 
+    @Test("connect: rejected when already connecting")
+    func connectRejectedWhenConnecting() {
+        let state = FlightState.initial.with(connectionStatus: .connecting)
+        let config = ConnectionConfig(host: "10.0.0.1", port: 14550)
+        let result = FlightReducer().reduce(state: state, action: .connect(config: config, correlationID: testID))
+        #expect(result.applied == false)
+        #expect(result.rationale.contains("connecting"))
+    }
+
     @Test("disconnect: accepted when connected; clears flight data")
     func disconnectAcceptedClearsFlyData() {
         let state = makeReadyToArmState().with(
@@ -59,6 +68,7 @@ struct FlightReducerConnectionTests {
         #expect(result.newState.connectionStatus == .disconnected)
         #expect(result.newState.telemetry == nil)
         #expect(result.newState.position == nil)
+        #expect(result.newState.attitude == nil)
         #expect(result.newState.battery == nil)
         #expect(result.newState.gpsInfo == nil)
     }

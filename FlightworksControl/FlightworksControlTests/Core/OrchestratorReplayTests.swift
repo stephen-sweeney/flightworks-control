@@ -80,6 +80,46 @@ struct OrchestratorReplayTests {
         #expect(replayResult.finalState == .initial)
     }
 
+    @Test("replay: state hash mismatch after valid chain reports failure")
+    func replayHashMismatch() async {
+        let clock = FixedClock()
+        let uuidGen = SequentialUUIDGenerator()
+        let orchestrator = FlightOrchestrator(clock: clock, uuidGenerator: uuidGen)
+
+        let config = ConnectionConfig(host: "10.0.0.1", port: 14550)
+        let c1 = UUID(uuidString: "DDDDDDDD-0000-0000-0000-000000000001")!
+        await orchestrator.dispatch(.connect(config: config, correlationID: c1), agentID: "UI")
+
+        // Get the valid log, then reconstruct with a tampered stateHashAfter
+        let validLog = await orchestrator.getAuditLog()
+
+        // Build a new log re-appending the same events but replacing the
+        // last accepted event's stateHashAfter with a fake hash.
+        var tamperedLog = EventLog<FlightAction>()
+        for (index, entry) in validLog.entries.enumerated() {
+            if index == validLog.entries.count - 1 {
+                // Tamper the final entry's stateHashAfter
+                let tampered = AuditEvent<FlightAction>(
+                    id: entry.id,
+                    timestamp: entry.timestamp,
+                    eventType: entry.eventType,
+                    stateHashBefore: entry.stateHashBefore,
+                    stateHashAfter: "0000000000000000000000000000000000000000000000000000000000000000",
+                    applied: entry.applied,
+                    rationale: entry.rationale,
+                    previousEntryHash: entry.previousEntryHash
+                )
+                tamperedLog.append(tampered)
+            } else {
+                tamperedLog.append(entry)
+            }
+        }
+
+        let replayResult = await orchestrator.replay(log: tamperedLog)
+        #expect(replayResult.succeeded == false)
+        #expect(replayResult.failureReason?.contains("mismatch") == true)
+    }
+
     @Test("replay: hash chain verification failure is reported")
     func replayReportsTamperedChain() async {
         let orchestrator = FlightOrchestrator(
@@ -94,5 +134,7 @@ struct OrchestratorReplayTests {
         let tamperedLog = EventLog<FlightAction>()  // empty — missing init event
         let replayResult = await orchestrator.replay(log: tamperedLog)
         #expect(replayResult.finalState == .initial)
+        #expect(replayResult.succeeded == false)
+        #expect(replayResult.failureReason != nil)
     }
 }
